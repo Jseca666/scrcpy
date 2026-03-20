@@ -42,6 +42,7 @@ src = [
     'src/uhid/gamepad_uhid.c',
     'src/uhid/keyboard_uhid.c',
     'src/uhid/mouse_uhid.c',
+    'src/uhid/stylus_uhid.c',
     'src/uhid/uhid_output.c',
     'src/util/acksync.c',
     'src/util/audiobuf.c',

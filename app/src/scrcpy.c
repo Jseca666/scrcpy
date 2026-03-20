@@ -29,6 +29,7 @@
 #include "uhid/gamepad_uhid.h"
 #include "uhid/keyboard_uhid.h"
 #include "uhid/mouse_uhid.h"
+#include "uhid/stylus_uhid.h"
 #ifdef HAVE_USB
 # include "usb/aoa_hid.h"
 # include "usb/gamepad_aoa.h"
@@ -67,7 +68,7 @@ struct scrcpy {
     // sequence/ack helper to synchronize clipboard and Ctrl+v via HID
     struct sc_acksync acksync;
 #endif
-    struct sc_uhid_devices uhid_devices;
+struct sc_uhid_devices uhid_devices;
     union {
         struct sc_keyboard_sdk keyboard_sdk;
         struct sc_keyboard_uhid keyboard_uhid;
@@ -88,6 +89,8 @@ struct scrcpy {
         struct sc_gamepad_aoa gamepad_aoa;
 #endif
     };
+    struct sc_stylus_uhid stylus_uhid;
+
     struct sc_timeout timeout;
 };
 
@@ -770,6 +773,10 @@ aoa_complete:
             mp = &s->mouse_sdk.mouse_processor;
         } else if (options->mouse_input_mode == SC_MOUSE_INPUT_MODE_UHID) {
             bool ok = sc_mouse_uhid_init(&s->mouse_uhid, &s->controller);
+            if (!ok) {
+                goto end;
+            }
+            ok = sc_stylus_uhid_init(&s->stylus_uhid, &s->controller);
             if (!ok) {
                 goto end;
             }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run scrcpy generated in the specified BUILDDIR.
-#
+#1
 # This provides the same feature as "ninja run", except that it is possible to
 # pass arguments to scrcpy.
 #

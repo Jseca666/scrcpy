@@ -3,24 +3,13 @@
 
 #include "common.h"
 #include "controller.h"
+#include "hid/hid_touchscreen.h"
 
-#define SC_TOUCHSCREEN_CONTACTS 10
-
-struct sc_touchscreen_contact {
-    bool active;
-    uint16_t contact_id;
-    uint16_t x;
-    uint16_t y;
-    uint16_t width;
-    uint16_t height;
-    uint8_t pressure;
-    uint16_t azimuth;
-};
+#define SC_TOUCHSCREEN_CONTACTS SC_HID_TOUCHSCREEN_CONTACTS
 
 struct sc_touchscreen_uhid {
     struct sc_controller *controller;
-    struct sc_touchscreen_contact contacts[SC_TOUCHSCREEN_CONTACTS];
-    uint16_t scan_time;
+    struct sc_hid_touchscreen hid;
 };
 
 bool

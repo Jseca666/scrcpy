@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <SDL2/SDL.h>
 #include "control_msg.h"
 #include "hid/hid_event.h"
 #include "util/log.h"
@@ -20,7 +19,7 @@ static const char *SC_TOUCHSCREEN_NAME = "Synaptics_ts";
  * For now this is intentionally hard-coded for testing.
  * Later, replace SC_TS_X_MAX / SC_TS_Y_MAX by display_resolution * 10 - 1.
  */
-#define SC_TS_CONTACTS             10
+#define SC_TS_CONTACTS SC_TOUCHSCREEN_CONTACTS
 #define SC_TS_REPORT_ID            0x01
 
 #define SC_TS_X_MAX                20639
@@ -213,110 +212,80 @@ sc_touchscreen_send_frame(struct sc_touchscreen_uhid *touchscreen, uint8_t *repo
     return sc_touchscreen_uhid_send_input(touchscreen, report, SC_TS_REPORT_SIZE);
 }
 
-static int
-sc_touchscreen_uhid_test_thread(void *userdata) {
-    struct sc_touchscreen_uhid *touchscreen = userdata;
 
-    uint8_t report[SC_TS_REPORT_SIZE];
-    uint16_t scan_time = 0;
+void
+sc_touchscreen_uhid_set_contact(struct sc_touchscreen_uhid *touchscreen,
+                                unsigned index, bool active,
+                                uint16_t contact_id,
+                                uint16_t x, uint16_t y,
+                                uint16_t width, uint16_t height,
+                                uint8_t pressure, uint16_t azimuth) {
+    assert(index < SC_TOUCHSCREEN_CONTACTS);
 
-    LOGI("touchscreen test thread started");
-    SDL_Delay(3000);
+    struct sc_touchscreen_contact *contact = &touchscreen->contacts[index];
 
-    for (int i = 0; i < 20; ++i) {
-        LOGI("touchscreen test round %d: finger0 down", i);
-        sc_touchscreen_report_reset(report, scan_time);
-        sc_touchscreen_report_set_finger(report, 0, true,
-                                         100,
-                                         6000, 9000,
-                                         900, 1300,
-                                         45, 9000);
-        sc_touchscreen_report_set_contact_count(report, 1);
-        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
-            return 0;
-        }
-        SDL_Delay(500);
-
-        LOGI("touchscreen test round %d: finger0 move", i);
-        sc_touchscreen_report_reset(report, scan_time);
-        sc_touchscreen_report_set_finger(report, 0, true,
-                                         100,
-                                         9000, 12000,
-                                         1000, 1400,
-                                         52, 9000);
-        sc_touchscreen_report_set_contact_count(report, 1);
-        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
-            return 0;
-        }
-        SDL_Delay(500);
-
-        LOGI("touchscreen test round %d: finger1 down", i);
-        sc_touchscreen_report_reset(report, scan_time);
-        sc_touchscreen_report_set_finger(report, 0, true,
-                                         100,
-                                         9000, 12000,
-                                         1000, 1400,
-                                         52, 9000);
-        sc_touchscreen_report_set_finger(report, 1, true,
-                                         101,
-                                         15000, 20000,
-                                         950, 1350,
-                                         48, 9000);
-        sc_touchscreen_report_set_contact_count(report, 2);
-        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
-            return 0;
-        }
-        SDL_Delay(500);
-
-        LOGI("touchscreen test round %d: two-finger move", i);
-        sc_touchscreen_report_reset(report, scan_time);
-        sc_touchscreen_report_set_finger(report, 0, true,
-                                         100,
-                                         7000, 10000,
-                                         1100, 1500,
-                                         58, 9000);
-        sc_touchscreen_report_set_finger(report, 1, true,
-                                         101,
-                                         17000, 22000,
-                                         1000, 1450,
-                                         54, 9000);
-        sc_touchscreen_report_set_contact_count(report, 2);
-        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
-            return 0;
-        }
-        SDL_Delay(500);
-
-        LOGI("touchscreen test round %d: finger1 up", i);
-        sc_touchscreen_report_reset(report, scan_time);
-        sc_touchscreen_report_set_finger(report, 0, true,
-                                         100,
-                                         7000, 10000,
-                                         1100, 1500,
-                                         58, 9000);
-        sc_touchscreen_report_set_contact_count(report, 1);
-        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
-            return 0;
-        }
-        SDL_Delay(500);
-
-        LOGI("touchscreen test round %d: all up", i);
-        sc_touchscreen_report_reset(report, scan_time);
-        sc_touchscreen_report_set_contact_count(report, 0);
-        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
-            return 0;
-        }
-        SDL_Delay(800);
+    if (!active) {
+        memset(contact, 0, sizeof(*contact));
+        return;
     }
 
-    LOGI("touchscreen test thread finished");
-    return 0;
+    contact->active = true;
+    contact->contact_id = contact_id;
+    contact->x = x;
+    contact->y = y;
+    contact->width = width;
+    contact->height = height;
+    contact->pressure = pressure;
+    contact->azimuth = azimuth;
+}
+
+void
+sc_touchscreen_uhid_clear_contact(struct sc_touchscreen_uhid *touchscreen,
+                                  unsigned index) {
+    assert(index < SC_TOUCHSCREEN_CONTACTS);
+    memset(&touchscreen->contacts[index], 0,
+           sizeof(touchscreen->contacts[index]));
+}
+
+void
+sc_touchscreen_uhid_clear_all(struct sc_touchscreen_uhid *touchscreen) {
+    memset(touchscreen->contacts, 0, sizeof(touchscreen->contacts));
 }
 
 bool
+sc_touchscreen_uhid_commit(struct sc_touchscreen_uhid *touchscreen) {
+    uint8_t report[SC_TS_REPORT_SIZE];
+    uint8_t contact_count = 0;
+
+    sc_touchscreen_report_reset(report, touchscreen->scan_time);
+
+    for (unsigned i = 0; i < SC_TOUCHSCREEN_CONTACTS; ++i) {
+        const struct sc_touchscreen_contact *contact = &touchscreen->contacts[i];
+        if (!contact->active) {
+            continue;
+        }
+
+        sc_touchscreen_report_set_finger(report, i, true,
+                                         contact->contact_id,
+                                         contact->x, contact->y,
+                                         contact->width, contact->height,
+                                         contact->pressure,
+                                         contact->azimuth);
+        ++contact_count;
+    }
+
+    sc_touchscreen_report_set_contact_count(report, contact_count);
+    return sc_touchscreen_send_frame(touchscreen, report,
+                                     &touchscreen->scan_time);
+}
+
+
+bool
 sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
-                    struct sc_controller *controller) {
+                         struct sc_controller *controller) {
     assert(SC_TS_REPORT_SIZE <= SC_HID_MAX_SIZE);
 
+    memset(touchscreen, 0, sizeof(*touchscreen));
     touchscreen->controller = controller;
 
     struct sc_control_msg msg;
@@ -331,12 +300,6 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
 
     if (!sc_controller_push_msg(controller, &msg)) {
         LOGE("Could not push UHID_CREATE message (touchscreen)");
-        return false;
-    }
-
-    if (!SDL_CreateThread(sc_touchscreen_uhid_test_thread, "touchscreen-uhid-test",
-                          touchscreen)) {
-        LOGE("Could not create touchscreen test thread: %s", SDL_GetError());
         return false;
     }
 

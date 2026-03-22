@@ -2,9 +2,8 @@
 
 #include <assert.h>
 #include <string.h>
-#include <stdbool.h>
-#define SC_TS_REPORT_ID 0x01
 
+#define SC_TS_REPORT_ID 0x01
 #define SC_TS_X_MAX 20639
 #define SC_TS_Y_MAX 30959
 #define SC_TS_SIZE_MAX 30959
@@ -143,30 +142,41 @@ sc_touchscreen_report_set_contact_count(uint8_t *report, uint8_t count) {
     report[SC_TS_CONTACT_COUNT_OFFSET] = count;
 }
 
+static uint8_t
+sc_touchscreen_build_flags(const struct sc_hid_touchscreen_contact *contact) {
+    uint8_t flags = 0;
+    if (contact->tip_switch) {
+        flags |= 0x01;
+    }
+    if (contact->in_range) {
+        flags |= 0x02;
+    }
+    if (contact->confidence) {
+        flags |= 0x04;
+    }
+    return flags;
+}
+
 static void
-sc_touchscreen_report_set_finger(uint8_t *report, unsigned index, bool active,
-                                 uint16_t contact_id,
-                                 uint16_t x, uint16_t y,
-                                 uint16_t width, uint16_t height,
-                                 uint8_t pressure, uint16_t azimuth) {
+sc_touchscreen_report_set_finger(uint8_t *report, unsigned index,
+                                 const struct sc_hid_touchscreen_contact *contact) {
     assert(index < SC_HID_TOUCHSCREEN_CONTACTS);
 
     size_t off = 1 + index * SC_TS_FINGER_SIZE;
 
-    if (!active) {
+    if (!contact->present) {
         memset(&report[off], 0, SC_TS_FINGER_SIZE);
         return;
     }
 
-    report[off + 0] = 0x07; /* TipSwitch | InRange | Confidence */
-
-    sc_write16le(&report[off + 1], contact_id);
-    sc_write16le(&report[off + 3], x);
-    sc_write16le(&report[off + 5], y);
-    sc_write16le(&report[off + 7], width);
-    sc_write16le(&report[off + 9], height);
-    report[off + 11] = pressure;
-    sc_write16le(&report[off + 12], azimuth);
+    report[off + 0] = sc_touchscreen_build_flags(contact);
+    sc_write16le(&report[off + 1], contact->contact_id);
+    sc_write16le(&report[off + 3], contact->x);
+    sc_write16le(&report[off + 5], contact->y);
+    sc_write16le(&report[off + 7], contact->width);
+    sc_write16le(&report[off + 9], contact->height);
+    report[off + 11] = contact->pressure;
+    sc_write16le(&report[off + 12], contact->azimuth);
 }
 
 void
@@ -182,8 +192,7 @@ sc_hid_touchscreen_generate_open(struct sc_hid_open *hid_open) {
 }
 
 void
-sc_hid_touchscreen_set_contact(struct sc_hid_touchscreen *hid,
-                               unsigned index, bool active,
+sc_hid_touchscreen_set_contact(struct sc_hid_touchscreen *hid, unsigned index,
                                uint16_t contact_id,
                                uint16_t x, uint16_t y,
                                uint16_t width, uint16_t height,
@@ -191,13 +200,10 @@ sc_hid_touchscreen_set_contact(struct sc_hid_touchscreen *hid,
     assert(index < SC_HID_TOUCHSCREEN_CONTACTS);
 
     struct sc_hid_touchscreen_contact *contact = &hid->contacts[index];
-
-    if (!active) {
-        memset(contact, 0, sizeof(*contact));
-        return;
-    }
-
-    contact->active = true;
+    contact->present = true;
+    contact->tip_switch = true;
+    contact->in_range = true;
+    contact->confidence = true;
     contact->contact_id = contact_id;
     contact->x = x;
     contact->y = y;
@@ -208,8 +214,30 @@ sc_hid_touchscreen_set_contact(struct sc_hid_touchscreen *hid,
 }
 
 void
-sc_hid_touchscreen_clear_contact(struct sc_hid_touchscreen *hid,
-                                 unsigned index) {
+sc_hid_touchscreen_release_contact(struct sc_hid_touchscreen *hid,
+                                   unsigned index,
+                                   uint16_t contact_id,
+                                   uint16_t x, uint16_t y,
+                                   uint16_t width, uint16_t height,
+                                   uint16_t azimuth) {
+    assert(index < SC_HID_TOUCHSCREEN_CONTACTS);
+
+    struct sc_hid_touchscreen_contact *contact = &hid->contacts[index];
+    contact->present = true;
+    contact->tip_switch = false;
+    contact->in_range = false;
+    contact->confidence = true;
+    contact->contact_id = contact_id;
+    contact->x = x;
+    contact->y = y;
+    contact->width = width;
+    contact->height = height;
+    contact->pressure = 0;
+    contact->azimuth = azimuth;
+}
+
+void
+sc_hid_touchscreen_clear_contact(struct sc_hid_touchscreen *hid, unsigned index) {
     assert(index < SC_HID_TOUCHSCREEN_CONTACTS);
     memset(&hid->contacts[index], 0, sizeof(hid->contacts[index]));
 }
@@ -234,16 +262,11 @@ sc_hid_touchscreen_generate_input(struct sc_hid_touchscreen *hid,
 
     for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
         const struct sc_hid_touchscreen_contact *contact = &hid->contacts[i];
-        if (!contact->active) {
+        if (!contact->present) {
             continue;
         }
 
-        sc_touchscreen_report_set_finger(report, i, true,
-                                         contact->contact_id,
-                                         contact->x, contact->y,
-                                         contact->width, contact->height,
-                                         contact->pressure,
-                                         contact->azimuth);
+        sc_touchscreen_report_set_finger(report, i, contact);
         ++contact_count;
     }
 

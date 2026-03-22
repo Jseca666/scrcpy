@@ -1,6 +1,7 @@
 #include "touchscreen_uhid_test.h"
 #define SC_TOUCHSCREEN_UHID_MANUAL_TEST 1
 #include <inttypes.h>
+
 #include <SDL2/SDL_thread.h>
 #include <SDL2/SDL_timer.h>
 
@@ -16,7 +17,6 @@
 #define SC_TS_TEST_P2 ((uint64_t) 1002)
 #define SC_TS_TEST_P3 ((uint64_t) 1003)
 
-/* 整体节奏放慢 */
 #define SC_TS_TEST_START_DELAY_MS       3000
 #define SC_TS_TEST_HOLD_AFTER_DOWN_MS   1400
 #define SC_TS_TEST_MOVE_STEP_DELAY_MS    180
@@ -45,8 +45,7 @@ sc_touchscreen_test_begin(struct sc_touchscreen_uhid *touchscreen) {
 }
 
 static void
-sc_touchscreen_test_end(struct sc_touchscreen_uhid *touchscreen) {
-    struct sc_touch_processor *tp = &touchscreen->touch_processor;
+sc_touchscreen_test_end(struct sc_touch_processor *tp) {
     if (tp->ops->end_touch_update) {
         tp->ops->end_touch_update(tp);
     }
@@ -88,11 +87,13 @@ static void
 sc_touchscreen_test_emit_batch(struct sc_touchscreen_uhid *touchscreen,
                                const struct sc_ts_test_sample *samples,
                                size_t count) {
+    struct sc_touch_processor *tp = &touchscreen->touch_processor;
+
     sc_touchscreen_test_begin(touchscreen);
     for (size_t i = 0; i < count; ++i) {
         sc_touchscreen_test_emit_sample(touchscreen, &samples[i]);
     }
-    sc_touchscreen_test_end(touchscreen);
+    sc_touchscreen_test_end(tp);
 }
 
 static void

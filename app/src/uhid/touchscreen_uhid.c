@@ -10,7 +10,7 @@
 #define SC_HID_ID_STYLUS 10
 
 static const char *SC_TOUCHSCREEN_NAME = "Synaptics_ts";
-/*
+/*e
  * Test profile:
  * - Touch Screen top-level collection
  * - 10 fixed finger blocks

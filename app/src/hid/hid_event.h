@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define SC_HID_MAX_SIZE 15
+#define SC_HID_MAX_SIZE 160
 
 struct sc_hid_input {
     uint16_t hid_id;

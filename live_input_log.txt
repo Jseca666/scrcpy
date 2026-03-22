@@ -1,0 +1,79 @@
+--------- beginning of system
+03-21 19:12:00.156 22981 22981 V Configuration: Updating configuration, locales updated from [] to [zh_CN]
+03-21 19:12:00.159 22981 22981 D VgcUtil : getFile name :theme_dir_path not exit in vgc_path_config.xml
+03-21 19:12:00.160 22981 22981 D VgcUtil : getFile name :theme_dir_path not exit in vgc_path_config.xml
+03-21 19:12:00.170 22981 22981 V Configuration: Updating configuration, locales updated from [] to [zh_CN]
+03-21 19:12:00.308 22992 22992 V Configuration: Updating configuration, locales updated from [] to [zh_CN]
+03-21 19:12:00.309 22992 22992 D VgcUtil : getFile name :theme_dir_path not exit in vgc_path_config.xml
+03-21 19:12:00.309 22992 22992 D VgcUtil : getFile name :theme_dir_path not exit in vgc_path_config.xml
+03-21 19:12:00.313 22992 22992 V Configuration: Updating configuration, locales updated from [] to [zh_CN]
+03-21 19:12:00.439  1739  4110 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:12:01.864  1739  1775 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=2
+03-21 19:12:02.055  1739  1775 D BatteryStatsService: noteVideoSurfaceChanged  noteWhich: 49,arg1: -1, arg2: -1, arg3: 3626, arg4: 72073167589343680, name: com.vivo.systemuiplugin
+03-21 19:12:04.395  1739  1976 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:12:05.765  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=7
+03-21 19:12:08.243  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:12:09.262  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=19
+03-21 19:12:10.296  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=16
+03-21 19:12:12.310  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:12:13.312  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=22
+03-21 19:12:14.363  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:12:15.463  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=5
+03-21 19:12:16.492  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=9
+03-21 19:12:17.700  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=16
+03-21 19:12:20.262  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:12:21.328  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=21
+03-21 19:12:22.378  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:12:24.263  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=4
+03-21 19:12:25.292  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=22
+03-21 19:12:26.326  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:12:27.623  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:12:28.672  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=11
+03-21 19:12:29.712  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=13
+03-21 19:12:32.275  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=17
+03-21 19:12:33.289  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=21
+03-21 19:12:34.323  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=16
+03-21 19:12:36.320  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:12:37.340  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=21
+03-21 19:12:38.393  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:12:39.676  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=4
+03-21 19:12:40.685  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=13
+03-21 19:12:41.706  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:12:42.724  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=17
+03-21 19:12:44.271  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:12:45.302  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=20
+03-21 19:12:46.335  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:12:48.290  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:12:49.351  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=20
+03-21 19:12:50.406  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=16
+03-21 19:12:51.741  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=4
+03-21 19:12:52.952  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=11
+03-21 19:12:53.972  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=19
+03-21 19:12:56.285  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=12
+03-21 19:12:57.317  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=19
+03-21 19:12:58.352  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:13:00.046  1739  4112 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:13:01.080  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:13:02.082  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:13:03.788  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=10
+03-21 19:13:04.963  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=11
+03-21 19:13:05.981  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=17
+03-21 19:13:07.169  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:13:08.317  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:13:09.329  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=17
+03-21 19:13:10.363  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=15
+03-21 19:13:12.313  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:13:13.328  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=17
+03-21 19:13:14.366  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:13:15.865  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=5
+03-21 19:13:16.981  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=14
+03-21 19:13:18.050  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=19
+03-21 19:13:19.277  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=12
+03-21 19:13:20.310  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:13:21.342  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=21
+03-21 19:13:22.380  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=13
+03-21 19:13:24.635  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=6
+03-21 19:13:27.932  1739  3628 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=18
+03-21 19:13:34.421  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:13:39.959  1739  1776 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1
+03-21 19:13:55.685  1739  4288 D BatteryStatsService: noteFpsPipe  : POWER_ID_FPS_PIPE initFps=2,fpsPipe=1

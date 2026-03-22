@@ -1,0 +1,74 @@
+add device 1: /dev/input/event7
+  name:     "algo-prox"
+  events:
+    REL (0002): REL_Z                
+    ABS (0003): ABS_Z                 : value 0, min -2147483648, max 2147483647, fuzz 0, flat 0, resolution 0
+  input props:
+    <none>
+add device 2: /dev/input/event6
+  name:     "vivo_ts"
+  events:
+    KEY (0001): KEY_W                 KEY_E                 KEY_O                 KEY_A                
+                KEY_F                 KEY_H                 KEY_C                 KEY_V                
+                KEY_M                 KEY_UP                KEY_LEFT              KEY_RIGHT            
+                KEY_MENU              KEY_WAKEUP            KEY_BACK              KEY_HOMEPAGE         
+                KEY_CAMERA            00f9                  00fa                  00fe                 
+                BTN_TOOL_FINGER*      BTN_TOUCH*            025d                  KEY_PRIVACY_SCREEN_T      
+                KEY_NEXT_ELEMENT      KEY_NAV_CHART         02f2                  02f3                 
+                02f4                  02f5                  02f6                  02f7                 
+                02f8                 
+    ABS (0003): ABS_MT_SLOT           : value 1, min 0, max 9, fuzz 0, flat 0, resolution 0
+                ABS_MT_TOUCH_MAJOR    : value 0, min 0, max 31, fuzz 0, flat 0, resolution 0
+                ABS_MT_TOUCH_MINOR    : value 0, min 0, max 31, fuzz 0, flat 0, resolution 0
+                ABS_MT_POSITION_X     : value 0, min 0, max 20639, fuzz 0, flat 0, resolution 0
+                ABS_MT_POSITION_Y     : value 0, min 0, max 30959, fuzz 0, flat 0, resolution 0
+                ABS_MT_TRACKING_ID    : value 0, min 0, max 65535, fuzz 0, flat 0, resolution 0
+  input props:
+    INPUT_PROP_DIRECT
+add device 3: /dev/input/event5
+  name:     "vivo_ts_pen"
+  events:
+    KEY (0001): BTN_DIGI              BTN_TOUCH             BTN_STYLUS            BTN_STYLUS2          
+                02f9                 
+    ABS (0003): ABS_X                 : value 0, min 0, max 20640, fuzz 0, flat 0, resolution 0
+                ABS_Y                 : value 0, min 0, max 30960, fuzz 0, flat 0, resolution 0
+                ABS_PRESSURE          : value 0, min 0, max 16380, fuzz 0, flat 0, resolution 0
+                ABS_DISTANCE          : value 0, min 0, max 1, fuzz 0, flat 0, resolution 0
+                ABS_TILT_X            : value 0, min -60, max 60, fuzz 0, flat 0, resolution 0
+                ABS_TILT_Y            : value 0, min -60, max 60, fuzz 0, flat 0, resolution 0
+  input props:
+    INPUT_PROP_DIRECT
+add device 4: /dev/input/event4
+  name:     "vivo_ts_fp"
+  events:
+    KEY (0001): 00fe                 
+    ABS (0003): ABS_MT_TOUCH_MAJOR    : value 0, min 0, max 31, fuzz 0, flat 0, resolution 0
+                ABS_MT_TOUCH_MINOR    : value 0, min 0, max 31, fuzz 0, flat 0, resolution 0
+                ABS_MT_POSITION_X     : value 0, min 0, max 20639, fuzz 0, flat 0, resolution 0
+                ABS_MT_POSITION_Y     : value 0, min 0, max 30959, fuzz 0, flat 0, resolution 0
+  input props:
+    <none>
+add device 5: /dev/input/event3
+  name:     "pogo_wakeup"
+  events:
+    KEY (0001): KEY_POWER            
+  input props:
+    <none>
+add device 6: /dev/input/event2
+  name:     "mt6991-mt6681 Headset Jack"
+  events:
+    SW  (0005): SW_HEADPHONE_INSERT   SW_MICROPHONE_INSERT  SW_LINEOUT_INSERT     SW_JACK_PHYSICAL_INS    
+  input props:
+    <none>
+add device 7: /dev/input/event1
+  name:     "mtk-pmic-keys"
+  events:
+    KEY (0001): KEY_VOLUMEDOWN        KEY_POWER            
+  input props:
+    <none>
+add device 8: /dev/input/event0
+  name:     "gpio-keys"
+  events:
+    KEY (0001): KEY_VOLUMEUP         
+  input props:
+    <none>

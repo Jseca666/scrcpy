@@ -1,0 +1,197 @@
+--------- beginning of system
+03-21 10:18:28.096  1739  1739 D BatteryStatsImpl: Reading daily items from /data/system/batterystats-daily.xml
+03-21 10:18:29.886  1739  1739 I ApexManager: Registering com.android.safetycenter.resources as apk-in-apex of com.android.permission
+03-21 10:18:29.906  1739  1739 I ApexManager: Registering com.android.permissioncontroller as apk-in-apex of com.android.permission
+03-21 10:18:29.912  1739  1739 I ApexManager: Registering com.android.uwb.resources as apk-in-apex of com.android.uwb
+03-21 10:18:29.934  1739  1739 I ApexManager: Registering com.android.healthconnect.controller as apk-in-apex of com.android.healthfitness
+03-21 10:18:29.941  1739  1739 I ApexManager: Registering com.android.health.connect.backuprestore as apk-in-apex of com.android.healthfitness
+03-21 10:18:29.956  1739  1739 I ApexManager: Registering com.android.virtualization.terminal as apk-in-apex of com.android.virt
+03-21 10:18:29.961  1739  1739 I ApexManager: Registering com.android.virtualmachine.res as apk-in-apex of com.android.virt
+03-21 10:18:29.962  1739  1739 I ApexManager: Registering com.android.microdroid.empty_payload as apk-in-apex of com.android.virt
+03-21 10:18:29.987  1739  1739 I ApexManager: Registering android.ext.services as apk-in-apex of com.android.extservices
+03-21 10:18:30.003  1739  1739 I ApexManager: Registering com.android.devicelockcontroller as apk-in-apex of com.android.devicelock
+03-21 10:18:30.009  1739  1739 I ApexManager: Registering com.android.compos.payload as apk-in-apex of com.android.compos
+03-21 10:18:30.026  1739  1739 I ApexManager: Registering com.android.bluetooth as apk-in-apex of com.android.bt
+03-21 10:18:30.031  1739  1739 I ApexManager: Registering com.android.cts.priv.ctsshim as apk-in-apex of com.android.apex.cts.shim
+03-21 10:18:30.036  1739  1739 I ApexManager: Registering com.android.cts.ctsshim as apk-in-apex of com.android.apex.cts.shim
+03-21 10:18:30.074  1739  1739 I ApexManager: Registering com.android.adservices.api as apk-in-apex of com.android.adservices
+03-21 10:18:30.081  1739  1739 I ApexManager: Registering com.android.sdksandbox as apk-in-apex of com.android.adservices
+03-21 10:18:30.088  1739  1739 I ApexManager: Registering com.android.server.deviceconfig.resources as apk-in-apex of com.android.configinfrastructure
+03-21 10:18:30.093  1739  1739 I ApexManager: Registering com.android.connectivity.resources as apk-in-apex of com.android.tethering
+03-21 10:18:30.094  1739  1739 I ApexManager: Registering com.android.networkstack.tethering as apk-in-apex of com.android.tethering
+03-21 10:18:30.124  1739  1739 I ApexManager: Registering com.android.providers.media.module as apk-in-apex of com.android.mediaprovider
+03-21 10:18:30.137  1739  1739 I ApexManager: Registering com.android.photopicker as apk-in-apex of com.android.mediaprovider
+03-21 10:18:30.147  1739  1739 I ApexManager: Registering com.android.wifi.resources as apk-in-apex of com.android.wifi
+03-21 10:18:30.156  1739  1739 I ApexManager: Registering com.android.hotspot2.osulogin as apk-in-apex of com.android.wifi
+03-21 10:18:30.158  1739  1739 I ApexManager: Registering com.android.wifi.dialog as apk-in-apex of com.android.wifi
+03-21 10:18:30.167  1739  1739 I ApexManager: Registering com.android.appsearch.apk as apk-in-apex of com.android.appsearch
+03-21 10:18:30.176  1739  1739 I ApexManager: Registering com.android.rkpdapp as apk-in-apex of com.android.rkpd
+03-21 10:18:30.187  1739  1739 I ApexManager: Registering com.android.ondevicepersonalization.services as apk-in-apex of com.android.ondevicepersonalization
+03-21 10:18:30.193  1739  1739 I ApexManager: Registering com.android.federatedcompute.services as apk-in-apex of com.android.ondevicepersonalization
+03-21 10:21:02.327  1739  1739 W BatteryStatsImpl: Unexpected per uid modem model name ()
+03-21 10:21:02.328  1739  1739 E BatteryStatsService: Could not register PowerStatsInternal
+03-21 10:21:04.704  1739  1797 I ActivityManager: About to commit checkpoint
+03-21 10:21:07.090  5085  5085 I AconfigFlags: Using new flag storage
+03-21 10:21:08.254  1739  1739 I DevicePolicyManager: Finished calculating hasIncompatibleAccountsTask
+03-21 10:21:08.415  1739  1794 I ActivityManager: Finished processing BOOT_COMPLETED for u999
+03-21 10:21:10.485  5085  5085 W ActivityThread: getPackageInfo() called with an older ApplicationInfo than the cached version for package com.google.android.gms
+03-21 10:21:10.559  5085  5085 W LoadedApk: New application info for package com.google.android.gms is out of date with TS 200329 < the current TS 204090
+03-21 10:21:11.211  5085  5085 I ActivityThread: ApplicationInfo updating for com.google.android.gms, new timestamp: 200329
+03-21 10:21:11.211  5085  5085 I ActivityThread: assets removed: [/data/resource-cache/com.android.systemui-neutral-Eq0w.frro, /data/resource-cache/com.android.systemui-accent-caeH.frro, /data/resource-cache/com.android.systemui-dynamic-XpE8.frro]
+03-21 10:21:11.211  5085  5085 I ActivityThread: assets added: [/data/resource-cache/com.android.systemui-neutral-B1OU.frro, /data/resource-cache/com.android.systemui-accent-oB7H.frro, /data/resource-cache/com.android.systemui-dynamic-n6bI.frro, /data/user_de/0/com.google.android.gms/files/locale_patches/locale_split1631069485-zh.apk]
+03-21 10:21:11.880  6257  7543 I AconfigFlags: Using new flag storage
+03-21 10:21:11.424  9069  9069 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:11.424  9069  9069 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:11.424  9069  9069 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:21:11.424  9069  9069 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 10:21:14.675  9853  9853 I VirtualizationService: virtualizationservice::maintenance: Failed to find a Secretkeeper instance; skipping secret management
+03-21 10:21:14.675  9853  9853 I VirtualizationService: virtualizationservice: Registered Binder service android.system.virtualizationservice.
+03-21 10:21:14.675  9853  9853 I VirtualizationService: virtualizationservice: Registered Binder service android.hardware.security.keymint.IRemotelyProvisionedComponent/avf.
+03-21 10:21:14.676  9853  9853 I VirtualizationService: virtualizationservice: Registered Binder service android.system.virtualizationmaintenance.
+03-21 10:21:14.677  9853  9884 E VirtualizationService: avflog: Status(-7, EX_UNSUPPORTED_OPERATION): 'Remote attestation is disabled'
+03-21 10:21:17.499  9646 10456 W PowerProfile: screen.on is deprecated! Use screen.on.display0 instead.
+03-21 10:21:17.501  9646 10456 W PowerProfile: screen.full is deprecated! Use screen.full.display0 instead.
+03-21 10:21:17.501  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x0, drain:SLEEP,RAT:DEFAULT
+03-21 10:21:17.501  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x10000000, drain:IDLE,RAT:DEFAULT
+03-21 10:21:17.502  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x20000000, drain:RX,RAT:DEFAULT
+03-21 10:21:17.502  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x30000000, drain:TX,level:0,RAT:DEFAULT
+03-21 10:21:17.503  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x31000000, drain:TX,level:1,RAT:DEFAULT
+03-21 10:21:17.503  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x32000000, drain:TX,level:2,RAT:DEFAULT
+03-21 10:21:17.503  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x33000000, drain:TX,level:3,RAT:DEFAULT
+03-21 10:21:17.503  9646 10456 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x34000000, drain:TX,level:4,RAT:DEFAULT
+03-21 10:21:18.065  9793  9902 I DisplayManager: Implicitly registering for refresh rate
+03-21 10:21:19.787  9793 11309 W PowerProfile: screen.on is deprecated! Use screen.on.display0 instead.
+03-21 10:21:19.787  9793 11309 W PowerProfile: screen.full is deprecated! Use screen.full.display0 instead.
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x0, drain:SLEEP,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x10000000, drain:IDLE,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x20000000, drain:RX,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x30000000, drain:TX,level:0,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x31000000, drain:TX,level:1,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x32000000, drain:TX,level:2,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x33000000, drain:TX,level:3,RAT:DEFAULT
+03-21 10:21:19.787  9793 11309 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x34000000, drain:TX,level:4,RAT:DEFAULT
+03-21 10:21:20.702  9069  9351 I DisplayManager: Implicitly registering for refresh rate
+03-21 10:21:21.707  9069  9407 E ActivityThread: Failed to find provider info for com.huawei.android.launcher.settings
+03-21 10:21:21.710  9069  9336 E ActivityThread: Failed to find provider info for com.android.badge
+03-21 10:21:21.711  9069 11448 E ActivityThread: Failed to find provider info for com.android.badge
+03-21 10:21:22.763 11645 11645 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:22.763 11645 11645 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:22.763 11645 11645 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:21:22.763 11645 11645 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 10:21:45.336 12582 12582 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:45.337 12582 12582 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:45.337 12582 12582 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:21:45.758 12582 12833 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+03-21 10:21:45.897 12878 12878 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:45.897 12878 12878 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:45.897 12878 12878 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:21:45.964 12582 12819 E ActivityThread: Failed to find provider info for com.huawei.appmarket.commondata
+03-21 10:21:45.983 12969 12969 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:45.983 12969 12969 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:45.983 12969 12969 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:21:46.120 12582 12954 W PowerProfile: screen.on is deprecated! Use screen.on.display0 instead.
+03-21 10:21:46.120 12582 12954 W PowerProfile: screen.full is deprecated! Use screen.full.display0 instead.
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x0, drain:SLEEP,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x10000000, drain:IDLE,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x20000000, drain:RX,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x30000000, drain:TX,level:0,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x31000000, drain:TX,level:1,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x32000000, drain:TX,level:2,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x33000000, drain:TX,level:3,RAT:DEFAULT
+03-21 10:21:46.120 12582 12954 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x34000000, drain:TX,level:4,RAT:DEFAULT
+03-21 10:21:46.124 12582 12827 E ActivityThread: Failed to find provider info for com.huawei.appmarket.commondata
+03-21 10:21:47.735  9069  9397 I AconfigFlags: Using new flag storage
+03-21 10:21:54.074 13544 13544 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:54.074 13544 13544 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:54.480 13544 13724 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+03-21 10:21:54.498 13544 13687 W PowerProfile: screen.on is deprecated! Use screen.on.display0 instead.
+03-21 10:21:54.498 13544 13687 W PowerProfile: screen.full is deprecated! Use screen.full.display0 instead.
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x0, drain:SLEEP,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x10000000, drain:IDLE,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x20000000, drain:RX,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x30000000, drain:TX,level:0,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x31000000, drain:TX,level:1,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x32000000, drain:TX,level:2,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x33000000, drain:TX,level:3,RAT:DEFAULT
+03-21 10:21:54.498 13544 13687 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x34000000, drain:TX,level:4,RAT:DEFAULT
+03-21 10:21:54.958 13544 13639 E ActivityThread: Failed to find provider info for com.google.android.gsf.gservices
+03-21 10:21:55.095 13925 13925 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:55.095 13925 13925 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:55.111 13935 13935 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:21:55.111 13935 13935 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:21:59.887 14292 14399 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+03-21 10:22:00.005 14445 14445 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:22:00.005 14445 14445 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:22:00.005 14445 14445 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:22:00.005 14445 14445 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 10:22:16.118  1739  1794 I ActivityManager: Finished processing BOOT_COMPLETED for u0
+03-21 10:23:24.905 16310 16310 I DisplayManager: Implicitly registering for refresh rate
+03-21 10:23:30.497 17941 17941 I ActivityThread: origin classname: android.app.backup.FullBackupAgent
+03-21 10:23:45.482 16310 16662 I AconfigFlags: Using new flag storage
+03-21 10:23:45.522 16310 16662 E ActivityThread: Failed to find provider info for cn.wsds.service.config
+03-21 10:24:18.127 10186 10231 W Looper  : Slow delivery took 30187ms android.bg app=com.google.android.gms.unstable main=false group=BACKGROUND h=android.database.sqlite.SQLiteConnectionPool$IdleConnectionHandler c=null m=1
+03-21 10:24:48.140 10186 10231 W Looper  : Drained
+03-21 10:25:03.940 19156 19259 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+03-21 10:26:04.103 20545 20545 I DisplayManager: Implicitly registering for refresh rate
+03-21 10:26:14.772 21056 21385 I DisplayManager: Choreographer implicitly registered for the refresh rate.
+03-21 10:26:14.825 21056 21056 W Looper  : Loop again would have the queued messages be executed before this one completed.
+03-21 10:26:16.281 21056 21669 E ActivityThread: Failed to find provider info for com.huawei.hms.contentprovider
+03-21 10:26:16.320 21056 21669 E ActivityThread: Failed to find provider info for com.huawei.hms.contentprovider
+03-21 10:26:16.365 21056 21298 W PowerProfile: screen.on is deprecated! Use screen.on.display0 instead.
+03-21 10:26:16.365 21056 21298 W PowerProfile: screen.full is deprecated! Use screen.full.display0 instead.
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x0, drain:SLEEP,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x10000000, drain:IDLE,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x20000000, drain:RX,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x30000000, drain:TX,level:0,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x31000000, drain:TX,level:1,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x32000000, drain:TX,level:2,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x33000000, drain:TX,level:3,RAT:DEFAULT
+03-21 10:26:16.365 21056 21298 W ModemPowerProfile: getAverageBatteryDrainMaH called with unexpected key: 0x34000000, drain:TX,level:4,RAT:DEFAULT
+03-21 10:26:16.515 21711 21711 W Looper  : Loop again would have the queued messages be executed before this one completed.
+03-21 10:26:17.206 21056 21950 E ActivityThread: Failed to find provider info for com.huawei.hms.contentprovider
+03-21 10:26:18.727 21056 21950 E ActivityThread: Failed to find provider info for com.huawei.hms.contentprovider
+03-21 10:26:18.728 21056 21950 E ActivityThread: Failed to find provider info for com.huawei.hms.contentprovider
+03-21 10:26:36.796 22655 22655 W Looper  : Loop again would have the queued messages be executed before this one completed.
+03-21 10:26:44.872 22808 22808 W Looper  : Loop again would have the queued messages be executed before this one completed.
+03-21 10:27:44.934 24461 24461 W Looper  : Loop again would have the queued messages be executed before this one completed.
+03-21 10:28:48.506 24766 24766 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:28:48.506 24766 24766 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:28:48.506 24766 24766 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:28:48.506 24766 24766 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 10:28:49.785 24877 24877 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 10:28:49.785 24877 24877 I ActivityThread: initVivoArgs  displayId:0
+03-21 10:28:49.785 24877 24877 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 10:28:49.785 24877 24877 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 10:28:54.480 24766 24856 I DisplayManager: Implicitly registering for refresh rate
+03-21 10:28:55.022 24766 25018 E ActivityThread: Failed to find provider info for com.android.badge
+03-21 10:28:55.027 24766 24806 E ActivityThread: Failed to find provider info for com.huawei.android.launcher.settings
+03-21 10:28:55.030 24766 24797 E ActivityThread: Failed to find provider info for com.android.badge
+03-21 11:22:07.285 27072 27072 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 11:22:07.285 27072 27072 I ActivityThread: initVivoArgs  displayId:0
+03-21 11:22:07.285 27072 27072 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 11:22:07.285 27072 27072 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 11:22:07.670 27072 27134 I AconfigFlags: Using new flag storage
+03-21 11:24:25.704 27331 27331 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 11:24:25.704 27331 27331 I ActivityThread: initVivoArgs  displayId:0
+03-21 11:24:25.704 27331 27331 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 11:24:25.704 27331 27331 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 11:24:35.869 27072 27102 I DisplayManager: Implicitly registering for refresh rate
+03-21 11:59:57.196  6257  7081 W Looper  : Slow delivery took 209877ms android.bg app=com.google.android.gms main=false group=BACKGROUND h=android.database.sqlite.SQLiteConnectionPool$IdleConnectionHandler c=null m=2
+03-21 12:40:25.037  8033  8033 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 12:40:25.037  8033  8033 I ActivityThread: initVivoArgs  displayId:0
+03-21 12:40:25.037  8033  8033 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 12:40:25.037  8033  8033 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 14:53:27.395 20803 20803 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 14:53:27.395 20803 20803 I ActivityThread: initVivoArgs  displayId:0
+03-21 14:53:27.395 20803 20803 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 14:53:27.395 20803 20803 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 15:50:56.162 27000 27000 I DisplayManager: Implicitly registering for refresh rate
+03-21 15:51:16.028 27000 27293 I AconfigFlags: Using new flag storage
+03-21 15:51:16.060 27000 27293 E ActivityThread: Failed to find provider info for cn.wsds.service.config
+03-21 17:06:32.855  8439  8439 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 17:06:32.855  8439  8439 I ActivityThread: initVivoArgs  displayId:0
+03-21 17:06:32.855  8439  8439 I ActivityThread: initVivoArgs  set isDragable true.
+03-21 17:06:32.855  8439  8439 I ActivityThread: initVivoArgs  set mIsCancelSendRotationToCamera true.
+03-21 18:56:18.854 19785 19785 I ActivityThread: initVivoArgs  set isEnableMagic true
+03-21 18:56:18.854 19785 19785 I ActivityThread: initVivoArgs  displayId:0
+03-21 19:08:07.499  6257  7081 W Looper  : Drained

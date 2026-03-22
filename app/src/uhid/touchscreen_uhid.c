@@ -286,7 +286,7 @@ sc_touchscreen_uhid_set_default_contact_profile(
     }
     if (azimuth) {
         touchscreen->azimuth =
-            azimuth > 18000 ? 18000 : azimuth;
+            azimuth > 18000 ? 18000 : azimuth;}
     }
 }
 

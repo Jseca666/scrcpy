@@ -21,6 +21,9 @@ struct sc_touchscreen_uhid {
 
     struct sc_touchscreen_slot slots[SC_HID_TOUCHSCREEN_CONTACTS];
     uint16_t next_contact_id;
+
+    unsigned update_depth;
+    bool dirty;
 };
 
 bool

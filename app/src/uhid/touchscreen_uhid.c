@@ -8,7 +8,14 @@
 #include "util/log.h"
 
 static const char *SC_TOUCHSCREEN_NAME = "Synaptics_ts";
+static void
+sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen);
 
+static void
+sc_touchscreen_uhid_begin_touch_update(struct sc_touch_processor *tp);
+
+static void
+sc_touchscreen_uhid_end_touch_update(struct sc_touch_processor *tp);
 static int
 sc_touchscreen_uhid_find_slot_by_pointer_id(
         struct sc_touchscreen_uhid *touchscreen, uint64_t pointer_id) {

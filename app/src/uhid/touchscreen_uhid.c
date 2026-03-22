@@ -1,4 +1,4 @@
-#include "stylus_uhid.h"
+#include "touchscreen_uhid.h"
 
 #include <assert.h>
 #include <string.h>
@@ -9,8 +9,7 @@
 
 #define SC_HID_ID_STYLUS 10
 
-static const char *SC_TOUCHSCREEN_NAME = "scrcpy-touchscreen";
-
+static const char *SC_TOUCHSCREEN_NAME = "Synaptics_ts";
 /*
  * Test profile:
  * - Touch Screen top-level collection
@@ -148,7 +147,7 @@ sc_write16le(uint8_t *buf, uint16_t value) {
 }
 
 static bool
-sc_stylus_uhid_send_input(struct sc_stylus_uhid *stylus, const uint8_t *data,
+sc_touchscreen_uhid_send_input(struct sc_touchscreen_uhid *touchscreen, const uint8_t *data,
                           size_t size) {
     assert(size <= SC_HID_MAX_SIZE);
 
@@ -158,7 +157,7 @@ sc_stylus_uhid_send_input(struct sc_stylus_uhid *stylus, const uint8_t *data,
     memcpy(msg.uhid_input.data, data, size);
     msg.uhid_input.size = (uint16_t) size;
 
-    if (!sc_controller_push_msg(stylus->controller, &msg)) {
+    if (!sc_controller_push_msg(touchscreen->controller, &msg)) {
         LOGE("Could not push UHID_INPUT message (touchscreen)");
         return false;
     }
@@ -207,16 +206,16 @@ sc_touchscreen_report_set_finger(uint8_t *report, unsigned index, bool active,
 }
 
 static bool
-sc_touchscreen_send_frame(struct sc_stylus_uhid *stylus, uint8_t *report,
+sc_touchscreen_send_frame(struct sc_touchscreen_uhid *touchscreen, uint8_t *report,
                           uint16_t *scan_time) {
     sc_write16le(&report[SC_TS_SCAN_TIME_OFFSET], *scan_time);
     ++*scan_time;
-    return sc_stylus_uhid_send_input(stylus, report, SC_TS_REPORT_SIZE);
+    return sc_touchscreen_uhid_send_input(touchscreen, report, SC_TS_REPORT_SIZE);
 }
 
 static int
-sc_stylus_uhid_test_thread(void *userdata) {
-    struct sc_stylus_uhid *stylus = userdata;
+sc_touchscreen_uhid_test_thread(void *userdata) {
+    struct sc_touchscreen_uhid *touchscreen = userdata;
 
     uint8_t report[SC_TS_REPORT_SIZE];
     uint16_t scan_time = 0;
@@ -233,7 +232,7 @@ sc_stylus_uhid_test_thread(void *userdata) {
                                          900, 1300,
                                          45, 9000);
         sc_touchscreen_report_set_contact_count(report, 1);
-        if (!sc_touchscreen_send_frame(stylus, report, &scan_time)) {
+        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
             return 0;
         }
         SDL_Delay(500);
@@ -246,7 +245,7 @@ sc_stylus_uhid_test_thread(void *userdata) {
                                          1000, 1400,
                                          52, 9000);
         sc_touchscreen_report_set_contact_count(report, 1);
-        if (!sc_touchscreen_send_frame(stylus, report, &scan_time)) {
+        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
             return 0;
         }
         SDL_Delay(500);
@@ -264,7 +263,7 @@ sc_stylus_uhid_test_thread(void *userdata) {
                                          950, 1350,
                                          48, 9000);
         sc_touchscreen_report_set_contact_count(report, 2);
-        if (!sc_touchscreen_send_frame(stylus, report, &scan_time)) {
+        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
             return 0;
         }
         SDL_Delay(500);
@@ -282,7 +281,7 @@ sc_stylus_uhid_test_thread(void *userdata) {
                                          1000, 1450,
                                          54, 9000);
         sc_touchscreen_report_set_contact_count(report, 2);
-        if (!sc_touchscreen_send_frame(stylus, report, &scan_time)) {
+        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
             return 0;
         }
         SDL_Delay(500);
@@ -295,7 +294,7 @@ sc_stylus_uhid_test_thread(void *userdata) {
                                          1100, 1500,
                                          58, 9000);
         sc_touchscreen_report_set_contact_count(report, 1);
-        if (!sc_touchscreen_send_frame(stylus, report, &scan_time)) {
+        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
             return 0;
         }
         SDL_Delay(500);
@@ -303,7 +302,7 @@ sc_stylus_uhid_test_thread(void *userdata) {
         LOGI("touchscreen test round %d: all up", i);
         sc_touchscreen_report_reset(report, scan_time);
         sc_touchscreen_report_set_contact_count(report, 0);
-        if (!sc_touchscreen_send_frame(stylus, report, &scan_time)) {
+        if (!sc_touchscreen_send_frame(touchscreen, report, &scan_time)) {
             return 0;
         }
         SDL_Delay(800);
@@ -314,17 +313,17 @@ sc_stylus_uhid_test_thread(void *userdata) {
 }
 
 bool
-sc_stylus_uhid_init(struct sc_stylus_uhid *stylus,
+sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
                     struct sc_controller *controller) {
     assert(SC_TS_REPORT_SIZE <= SC_HID_MAX_SIZE);
 
-    stylus->controller = controller;
+    touchscreen->controller = controller;
 
     struct sc_control_msg msg;
     msg.type = SC_CONTROL_MSG_TYPE_UHID_CREATE;
     msg.uhid_create.id = SC_HID_ID_STYLUS;
-    msg.uhid_create.vendor_id = 0;
-    msg.uhid_create.product_id = 0;
+    msg.uhid_create.vendor_id = 0x06cb;
+    msg.uhid_create.product_id = 0x0006;
     msg.uhid_create.name = SC_TOUCHSCREEN_NAME;
     msg.uhid_create.report_desc = SC_HID_TOUCHSCREEN_REPORT_DESC;
     msg.uhid_create.report_desc_size =
@@ -335,8 +334,8 @@ sc_stylus_uhid_init(struct sc_stylus_uhid *stylus,
         return false;
     }
 
-    if (!SDL_CreateThread(sc_stylus_uhid_test_thread, "touchscreen-uhid-test",
-                          stylus)) {
+    if (!SDL_CreateThread(sc_touchscreen_uhid_test_thread, "touchscreen-uhid-test",
+                          touchscreen)) {
         LOGE("Could not create touchscreen test thread: %s", SDL_GetError());
         return false;
     }

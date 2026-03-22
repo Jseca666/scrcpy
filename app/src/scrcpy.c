@@ -29,7 +29,7 @@
 #include "uhid/gamepad_uhid.h"
 #include "uhid/keyboard_uhid.h"
 #include "uhid/mouse_uhid.h"
-#include "uhid/stylus_uhid.h"
+#include "uhid/touchscreen_uhid.h"
 #ifdef HAVE_USB
 # include "usb/aoa_hid.h"
 # include "usb/gamepad_aoa.h"
@@ -89,7 +89,7 @@ struct sc_uhid_devices uhid_devices;
         struct sc_gamepad_aoa gamepad_aoa;
 #endif
     };
-    struct sc_stylus_uhid stylus_uhid;
+    struct sc_touchscreen_uhid touchscreen_uhid;
 
     struct sc_timeout timeout;
 };
@@ -776,7 +776,7 @@ aoa_complete:
             if (!ok) {
                 goto end;
             }
-            ok = sc_stylus_uhid_init(&s->stylus_uhid, &s->controller);
+            ok = sc_touchscreen_uhid_init(&s->touchscreen_uhid, &s->controller);
             if (!ok) {
                 goto end;
             }

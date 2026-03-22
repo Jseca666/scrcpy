@@ -1,3 +1,5 @@
+
+#include "touchscreen_uhid_test.h"
 #include "touchscreen_uhid.h"
 
 #include <assert.h>
@@ -320,7 +322,8 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
         LOGE("Could not push UHID_CREATE message (touchscreen)");
         return false;
     }
-
+    //test
+    sc_touchscreen_uhid_test_schedule(touchscreen);
     return true;
 }
 

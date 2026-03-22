@@ -44,6 +44,7 @@ src = [
     'src/uhid/keyboard_uhid.c',
     'src/uhid/mouse_uhid.c',
     'src/uhid/touchscreen_uhid.c',
+    'src/uhid/touchscreen_uhid_test.c',
     'src/uhid/uhid_output.c',
     'src/util/acksync.c',
     'src/util/audiobuf.c',

@@ -7,7 +7,7 @@
 #include "hid/hid_event.h"
 #include "util/log.h"
 
-#define SC_HID_ID_STYLUS 10
+#define SC_HID_ID_TOUCHSCREEN 10
 
 static const char *SC_TOUCHSCREEN_NAME = "Synaptics_ts";
 /*e
@@ -153,7 +153,7 @@ sc_touchscreen_uhid_send_input(struct sc_touchscreen_uhid *touchscreen, const ui
 
     struct sc_control_msg msg;
     msg.type = SC_CONTROL_MSG_TYPE_UHID_INPUT;
-    msg.uhid_input.id = SC_HID_ID_STYLUS;
+    msg.uhid_input.id = SC_HID_ID_TOUCHSCREEN;
     memcpy(msg.uhid_input.data, data, size);
     msg.uhid_input.size = (uint16_t) size;
 
@@ -321,7 +321,7 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
 
     struct sc_control_msg msg;
     msg.type = SC_CONTROL_MSG_TYPE_UHID_CREATE;
-    msg.uhid_create.id = SC_HID_ID_STYLUS;
+    msg.uhid_create.id = SC_HID_ID_TOUCHSCREEN;
     msg.uhid_create.vendor_id = 0x06cb;
     msg.uhid_create.product_id = 0x0006;
     msg.uhid_create.name = SC_TOUCHSCREEN_NAME;

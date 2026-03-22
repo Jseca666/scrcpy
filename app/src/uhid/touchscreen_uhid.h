@@ -1,5 +1,5 @@
-#ifndef SC_TOUCHSCREEN_UHID_UHID_H
-#define SC_TOUCHSCREEN_UHID_UHID_H
+#ifndef SC_TOUCHSCREEN_UHID_H
+#define SC_TOUCHSCREEN_UHID_H
 
 #include "common.h"
 #include "controller.h"

@@ -22,6 +22,21 @@ struct sc_touch_processor_ops {
      */
     void (*process_touch)(struct sc_touch_processor *tp,
                           const struct sc_touch_event *event);
+
+    /**
+     * Begin a batch of touch updates.
+     *
+     * Optional. If implemented, multiple process_touch() calls may be grouped
+     * and committed once at end_touch_update().
+     */
+    void (*begin_touch_update)(struct sc_touch_processor *tp);
+
+    /**
+     * End a batch of touch updates.
+     *
+     * Optional. Flush pending updates if any.
+     */
+    void (*end_touch_update)(struct sc_touch_processor *tp);
 };
 
 #endif

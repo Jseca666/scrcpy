@@ -127,6 +127,34 @@ sc_touchscreen_uhid_commit(struct sc_touchscreen_uhid *touchscreen) {
     return sc_touchscreen_uhid_send_input(touchscreen, &hid_input);
 }
 
+static void
+sc_touchscreen_uhid_begin_touch_update(struct sc_touch_processor *tp) {
+    struct sc_touchscreen_uhid *touchscreen =
+        container_of(tp, struct sc_touchscreen_uhid, touch_processor);
+
+    ++touchscreen->update_depth;
+}
+
+static void
+sc_touchscreen_uhid_end_touch_update(struct sc_touch_processor *tp) {
+    struct sc_touchscreen_uhid *touchscreen =
+        container_of(tp, struct sc_touchscreen_uhid, touch_processor);
+
+    if (!touchscreen->update_depth) {
+        LOGW("Ignoring unmatched end_touch_update()");
+        return;
+    }
+
+    --touchscreen->update_depth;
+
+    if (touchscreen->update_depth == 0 && touchscreen->dirty) {
+        if (!sc_touchscreen_uhid_commit(touchscreen)) {
+            LOGW("Could not flush deferred touchscreen state");
+            return;
+        }
+        touchscreen->dirty = false;
+    }
+}
 
 static void
 sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
@@ -157,7 +185,7 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
                 touchscreen, (unsigned) slot, true,
                 touchscreen->slots[slot].contact_id,
                 x, y, width, height, pressure, azimuth);
-            sc_touchscreen_uhid_commit(touchscreen);
+            sc_touchscreen_uhid_commit_or_defer(touchscreen);
             break;
 
         case SC_TOUCH_ACTION_MOVE:
@@ -173,7 +201,7 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
                 touchscreen, (unsigned) slot, true,
                 touchscreen->slots[slot].contact_id,
                 x, y, width, height, pressure, azimuth);
-            sc_touchscreen_uhid_commit(touchscreen);
+            sc_touchscreen_uhid_commit_or_defer(touchscreen);
             break;
 
         case SC_TOUCH_ACTION_UP:
@@ -186,7 +214,7 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
             }
 
             sc_touchscreen_uhid_clear_contact(touchscreen, (unsigned) slot);
-            sc_touchscreen_uhid_commit(touchscreen);
+            sc_touchscreen_uhid_commit_or_defer(touchscreen);
             sc_touchscreen_uhid_release_slot(touchscreen, (unsigned) slot);
             break;
 
@@ -199,6 +227,8 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
 static const struct sc_touch_processor_ops
 sc_touchscreen_uhid_touch_processor_ops = {
     .process_touch = sc_touchscreen_uhid_process_touch,
+    .begin_touch_update = sc_touchscreen_uhid_begin_touch_update,
+    .end_touch_update = sc_touchscreen_uhid_end_touch_update,
 };
 
 bool
@@ -230,4 +260,19 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
     }
 
     return true;
+}
+
+static void
+sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen) {
+    if (touchscreen->update_depth > 0) {
+        touchscreen->dirty = true;
+        return;
+    }
+
+    if (!sc_touchscreen_uhid_commit(touchscreen)) {
+        LOGW("Could not commit touchscreen state");
+        return;
+    }
+
+    touchscreen->dirty = false;
 }

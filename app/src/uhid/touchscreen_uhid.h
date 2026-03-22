@@ -24,10 +24,20 @@ struct sc_touchscreen_uhid {
 
     unsigned update_depth;
     bool dirty;
+
+    uint16_t touch_major; // 0 表示使用模块默认值
+    uint16_t touch_minor; // 0 表示使用模块默认值
+    uint16_t azimuth;     // 0 表示使用模块默认值
 };
 
 bool
-sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
-                         struct sc_controller *controller);
+sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,struct sc_controller *controller);
+
+void
+sc_touchscreen_uhid_set_default_contact_profile(
+        struct sc_touchscreen_uhid *touchscreen,
+        uint16_t width, uint16_t height, uint16_t azimuth);
+void
+sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen);
 
 #endif

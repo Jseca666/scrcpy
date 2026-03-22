@@ -16,6 +16,24 @@ sc_touchscreen_uhid_begin_touch_update(struct sc_touch_processor *tp);
 
 static void
 sc_touchscreen_uhid_end_touch_update(struct sc_touch_processor *tp);
+
+
+static uint16_t
+sc_touchscreen_uhid_pick_size(uint16_t value, uint16_t fallback) {
+    return value ? value : fallback;
+}
+
+static uint16_t
+sc_touchscreen_uhid_pick_azimuth(uint16_t value, uint16_t fallback) {
+    if (!value) {
+        return fallback;
+    }
+    if (value > 18000) {
+        return 18000;
+    }
+    return value;
+}
+
 static int
 sc_touchscreen_uhid_find_slot_by_pointer_id(
         struct sc_touchscreen_uhid *touchscreen, uint64_t pointer_id) {
@@ -27,6 +45,8 @@ sc_touchscreen_uhid_find_slot_by_pointer_id(
     }
     return -1;
 }
+
+
 
 static int
 sc_touchscreen_uhid_find_free_slot(struct sc_touchscreen_uhid *touchscreen) {
@@ -173,11 +193,13 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
     uint16_t x = (uint16_t) event->position.point.x;
     uint16_t y = (uint16_t) event->position.point.y;
 
-    // v1.4 先保持固定默认值，后面再扩展成上层可传
-    uint16_t width = 1000;
-    uint16_t height = 1400;
+    uint16_t width = sc_touchscreen_uhid_pick_size(
+        event->touch_major, touchscreen->default_width);
+    uint16_t height = sc_touchscreen_uhid_pick_size(
+            event->touch_minor, touchscreen->default_height);
     uint8_t pressure = sc_touchscreen_uhid_normalize_pressure(event->pressure);
-    uint16_t azimuth = 9000;
+    uint16_t azimuth = sc_touchscreen_uhid_pick_azimuth(
+            event->azimuth, touchscreen->default_azimuth);
 
     switch (event->action) {
         case SC_TOUCH_ACTION_DOWN:
@@ -238,6 +260,36 @@ sc_touchscreen_uhid_touch_processor_ops = {
     .end_touch_update = sc_touchscreen_uhid_end_touch_update,
 };
 
+void
+sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
+    memset(touchscreen->slots, 0, sizeof(touchscreen->slots));
+    sc_touchscreen_uhid_clear_all(touchscreen);
+
+    touchscreen->update_depth = 0;
+    touchscreen->dirty = false;
+    touchscreen->next_contact_id = 1;
+
+    if (!sc_touchscreen_uhid_commit(touchscreen)) {
+        LOGW("Could not reset touchscreen state");
+    }
+}
+
+void
+sc_touchscreen_uhid_set_default_contact_profile(
+        struct sc_touchscreen_uhid *touchscreen,
+        uint16_t width, uint16_t height, uint16_t azimuth) {
+    if (width) {
+        touchscreen->default_width = width;
+    }
+    if (height) {
+        touchscreen->default_height = height;
+    }
+    if (azimuth) {
+        touchscreen->default_azimuth =
+            azimuth > 18000 ? 18000 : azimuth;
+    }
+}
+
 bool
 sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
                          struct sc_controller *controller) {
@@ -245,7 +297,10 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
     touchscreen->controller = controller;
     touchscreen->touch_processor.ops =
         &sc_touchscreen_uhid_touch_processor_ops;
-    touchscreen->next_contact_id = 1;                  
+    touchscreen->next_contact_id = 1;    
+    touchscreen->default_width = 1000;
+    touchscreen->default_height = 1400;
+    touchscreen->default_azimuth = 9000;              
     sc_hid_touchscreen_init(&touchscreen->hid);
 
     struct sc_hid_open hid_open;

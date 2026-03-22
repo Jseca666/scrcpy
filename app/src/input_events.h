@@ -411,6 +411,10 @@ struct sc_touch_event {
     enum sc_touch_action action;
     uint64_t pointer_id;
     float pressure;
+    
+    uint16_t touch_major; // 0 表示使用模块默认值
+    uint16_t touch_minor; // 0 表示使用模块默认值
+    uint16_t azimuth;     // 0 表示使用模块默认值
 };
 
 // As documented in <https://wiki.libsdl.org/SDL2/SDL_JoystickID>:

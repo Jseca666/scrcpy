@@ -1,5 +1,6 @@
 #ifndef SC_HID_TOUCHSCREEN_H
 #define SC_HID_TOUCHSCREEN_H
+#include <stdbool.h>
 
 #include "common.h"
 #include "hid/hid_event.h"

@@ -2,7 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
-
+#include <stdbool.h>
 #define SC_TS_REPORT_ID 0x01
 
 #define SC_TS_X_MAX 20639

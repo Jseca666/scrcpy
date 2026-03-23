@@ -39,7 +39,7 @@ struct sc_touch_simulation_config
 sc_touch_simulation_config_default(enum sc_touch_motion_profile profile) {
     switch (profile) {
         case SC_TOUCH_MOTION_PROFILE_STABLE:
-            return sc_touch_simulation_config_make(60, 8, 10,
+            return sc_touch_simulation_config_make(60, 8, 4,
                                                    0.45f, 1.5f, 0.90f, 0.92f,
                                                    1120, 1520,
                                                    SC_TOUCH_ORIENTATION_FIXED,
@@ -53,7 +53,7 @@ sc_touch_simulation_config_default(enum sc_touch_motion_profile profile) {
         case SC_TOUCH_MOTION_PROFILE_NATURAL:
         case SC_TOUCH_MOTION_PROFILE_CUSTOM:
         default:
-            return sc_touch_simulation_config_make(90, 6, 8,
+            return sc_touch_simulation_config_make(90, 6, 4,
                                                    0.30f, 1.0f, 1.00f, 1.00f,
                                                    1000, 1400,
                                                    SC_TOUCH_ORIENTATION_HALF_RANGE,

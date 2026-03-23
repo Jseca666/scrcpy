@@ -27,6 +27,7 @@ struct sc_touchscreen_uhid {
     struct sc_touchscreen_slot slots[SC_HID_TOUCHSCREEN_CONTACTS];
     uint16_t next_contact_id;
     unsigned update_depth;
+    unsigned explicit_frame_depth;
     bool dirty;
 
     uint16_t touch_major;
@@ -76,6 +77,55 @@ sc_touchscreen_uhid_set_motion_profile(
 enum sc_touch_motion_profile
 sc_touchscreen_uhid_get_motion_profile(
         const struct sc_touchscreen_uhid *touchscreen);
+
+void
+sc_touchscreen_uhid_begin_touch_frame(struct sc_touchscreen_uhid *touchscreen);
+
+void
+sc_touchscreen_uhid_end_touch_frame(struct sc_touchscreen_uhid *touchscreen);
+
+bool
+sc_touchscreen_uhid_ensure_pointer(struct sc_touchscreen_uhid *touchscreen,
+                                   uint64_t pointer_id);
+
+bool
+sc_touchscreen_uhid_pointer_down(struct sc_touchscreen_uhid *touchscreen,
+                                 uint64_t pointer_id,
+                                 uint16_t x, uint16_t y,
+                                 float pressure,
+                                 uint16_t touch_major, uint16_t touch_minor,
+                                 uint16_t azimuth);
+
+bool
+sc_touchscreen_uhid_pointer_move(struct sc_touchscreen_uhid *touchscreen,
+                                 uint64_t pointer_id,
+                                 uint16_t x, uint16_t y,
+                                 float pressure,
+                                 uint16_t touch_major, uint16_t touch_minor,
+                                 uint16_t azimuth);
+
+bool
+sc_touchscreen_uhid_pointer_release(struct sc_touchscreen_uhid *touchscreen,
+                                    uint64_t pointer_id,
+                                    uint16_t x, uint16_t y,
+                                    float pressure,
+                                    uint16_t touch_major, uint16_t touch_minor,
+                                    uint16_t azimuth);
+
+bool
+sc_touchscreen_uhid_finalize_pointer(struct sc_touchscreen_uhid *touchscreen,
+                                     uint64_t pointer_id);
+
+bool
+sc_touchscreen_uhid_end_pointer(struct sc_touchscreen_uhid *touchscreen,
+                                uint64_t pointer_id,
+                                uint16_t x, uint16_t y,
+                                float pressure,
+                                uint16_t touch_major, uint16_t touch_minor,
+                                uint16_t azimuth);
+
+void
+sc_touchscreen_uhid_clear_all_pointers(struct sc_touchscreen_uhid *touchscreen);
 
 void
 sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen);

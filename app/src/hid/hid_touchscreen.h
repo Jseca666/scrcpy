@@ -1,14 +1,14 @@
 #ifndef SC_HID_TOUCHSCREEN_H
 #define SC_HID_TOUCHSCREEN_H
-
+#include "common.h"
+#include "hid/hid_event.h"
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "common.h"
-#include "hid/hid_event.h"
+
 
 #define SC_HID_ID_TOUCHSCREEN 10
-#define SC_HID_TOUCHSCREEN_CONTACTS 10
+#define SC_HID_TOUCHSCREEN_CONTACTS 8
 
 struct sc_hid_touchscreen_contact {
     bool present;

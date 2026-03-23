@@ -27,6 +27,10 @@ sc_touchscreen_uhid_clear_contact(struct sc_touchscreen_uhid *touchscreen,
                                   unsigned index);
 
 static void
+sc_touchscreen_uhid_post_commit_release_slots(
+        struct sc_touchscreen_uhid *touchscreen);
+
+static void
 sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen);
 
 static void
@@ -132,6 +136,7 @@ sc_touchscreen_uhid_find_slot_by_pointer_id(
     for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
         if (touchscreen->slots[i].active
                 && !touchscreen->slots[i].pending_release
+                && !touchscreen->slots[i].finalize_pending_commit
                 && touchscreen->slots[i].pointer_id == pointer_id) {
             return (int) i;
         }
@@ -200,7 +205,9 @@ static unsigned
 sc_touchscreen_uhid_count_active_slots(const struct sc_touchscreen_uhid *touchscreen) {
     unsigned count = 0;
     for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
-        if (touchscreen->slots[i].active && !touchscreen->slots[i].pending_release) {
+        if (touchscreen->slots[i].active
+                && !touchscreen->slots[i].pending_release
+                && !touchscreen->slots[i].finalize_pending_commit) {
             ++count;
         }
     }
@@ -347,6 +354,17 @@ sc_touchscreen_uhid_commit(struct sc_touchscreen_uhid *touchscreen) {
     return sc_touchscreen_uhid_send_input(touchscreen, &hid_input);
 }
 
+static void
+sc_touchscreen_uhid_post_commit_release_slots(
+        struct sc_touchscreen_uhid *touchscreen) {
+    for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
+        if (touchscreen->slots[i].active
+                && touchscreen->slots[i].finalize_pending_commit) {
+            sc_touchscreen_uhid_release_slot(touchscreen, i);
+        }
+    }
+}
+
 /*
  * Legacy commit path used by the old event API and current deferred flushes.
  * Phase 4 keeps it for compatibility but new explicit release/finalize users
@@ -425,8 +443,7 @@ sc_touchscreen_uhid_end_touch_frame(struct sc_touchscreen_uhid *touchscreen) {
     }
 
     --touchscreen->explicit_frame_depth;
-
-    if (touchscreen->explicit_frame_depth == 0) {
+    if (!touchscreen->explicit_frame_depth) {
         touchscreen->batch_sync_anchor_active = false;
     }
 
@@ -435,6 +452,7 @@ sc_touchscreen_uhid_end_touch_frame(struct sc_touchscreen_uhid *touchscreen) {
             LOGW("Could not flush explicit touchscreen frame");
             return;
         }
+        sc_touchscreen_uhid_post_commit_release_slots(touchscreen);
         touchscreen->dirty = false;
     }
 }
@@ -505,7 +523,6 @@ sc_touchscreen_uhid_pointer_move(struct sc_touchscreen_uhid *touchscreen,
     }
 
     apply_single_finger_sampling = touchscreen->update_depth == 0
-            && touchscreen->explicit_frame_depth == 0
             && sc_touchscreen_uhid_count_active_slots(touchscreen) == 1;
 
     if (apply_single_finger_sampling) {
@@ -621,8 +638,8 @@ sc_touchscreen_uhid_finalize_pointer(struct sc_touchscreen_uhid *touchscreen,
     }
 
     sc_touchscreen_uhid_clear_contact(touchscreen, (unsigned) slot);
-    sc_touch_simulation_clear_slot(&touchscreen->sampling_slots[slot]);
-    sc_touchscreen_uhid_release_slot(touchscreen, (unsigned) slot);
+    touchscreen->slots[slot].pending_release = false;
+    touchscreen->slots[slot].finalize_pending_commit = true;
     sc_touchscreen_uhid_commit_or_defer(touchscreen);
     return true;
 }
@@ -644,16 +661,20 @@ sc_touchscreen_uhid_end_pointer(struct sc_touchscreen_uhid *touchscreen,
 
 void
 sc_touchscreen_uhid_clear_all_pointers(struct sc_touchscreen_uhid *touchscreen) {
-    if (touchscreen->explicit_frame_depth > 0 || touchscreen->update_depth > 0) {
-        memset(touchscreen->slots, 0, sizeof(touchscreen->slots));
-        memset(touchscreen->sampling_slots, 0, sizeof(touchscreen->sampling_slots));
-        sc_touchscreen_uhid_clear_all(touchscreen);
-        touchscreen->next_contact_id = 1;
-        touchscreen->dirty = true;
+    if (!touchscreen->explicit_frame_depth) {
+        sc_touchscreen_uhid_reset(touchscreen);
         return;
     }
 
-    sc_touchscreen_uhid_reset(touchscreen);
+    for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
+        if (touchscreen->slots[i].active) {
+            touchscreen->slots[i].pending_release = false;
+            touchscreen->slots[i].finalize_pending_commit = true;
+        }
+    }
+
+    sc_touchscreen_uhid_clear_all(touchscreen);
+    touchscreen->dirty = true;
 }
 
 static void
@@ -740,7 +761,6 @@ sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
     }
 
     touchscreen->update_depth = 0;
-    touchscreen->explicit_frame_depth = 0;
     touchscreen->dirty = false;
 
     if (had_active) {
@@ -753,7 +773,6 @@ sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
     memset(touchscreen->sampling_slots, 0, sizeof(touchscreen->sampling_slots));
     sc_touchscreen_uhid_clear_all(touchscreen);
     touchscreen->update_depth = 0;
-    touchscreen->explicit_frame_depth = 0;
     touchscreen->dirty = false;
     touchscreen->next_contact_id = 1;
 
@@ -878,7 +897,7 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
 
 static void
 sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen) {
-    if (touchscreen->update_depth > 0 || touchscreen->explicit_frame_depth > 0) {
+    if (touchscreen->explicit_frame_depth > 0 || touchscreen->update_depth > 0) {
         touchscreen->dirty = true;
         return;
     }

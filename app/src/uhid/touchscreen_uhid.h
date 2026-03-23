@@ -13,6 +13,7 @@
 struct sc_touchscreen_slot {
     bool active;
     bool pending_release;
+    bool finalize_pending_commit;
     uint64_t pointer_id;
     uint16_t contact_id;
 };

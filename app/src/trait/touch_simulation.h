@@ -91,6 +91,18 @@ sc_touch_simulation_config_build_runtime(
 uint64_t
 sc_touch_simulation_now_us(void);
 
+uint64_t
+sc_touch_simulation_effective_interval_us(
+        const struct sc_touch_simulation_config *config,
+        const struct sc_touch_sampling_runtime *runtime,
+        const struct sc_touch_sampling_slot_state *state,
+        uint16_t x, uint16_t y, uint64_t now_us);
+
+bool
+sc_touch_simulation_release_ready(
+        const struct sc_touch_sampling_slot_state *state,
+        uint64_t now_us);
+
 float
 sc_touch_simulation_distance(uint16_t x0, uint16_t y0,
                              uint16_t x1, uint16_t y1);
@@ -101,6 +113,13 @@ sc_touch_simulation_should_emit_move(
         const struct sc_touch_sampling_runtime *runtime,
         const struct sc_touch_sampling_slot_state *state,
         uint16_t x, uint16_t y, uint64_t now_us);
+
+
+void
+sc_touch_simulation_apply_position_smoothing(
+        const struct sc_touch_simulation_config *config,
+        const struct sc_touch_sampling_slot_state *state,
+        uint16_t *x, uint16_t *y);
 
 void
 sc_touch_simulation_mark_emit(struct sc_touch_sampling_slot_state *state,
@@ -123,6 +142,12 @@ sc_touch_motion_profile_name(enum sc_touch_motion_profile profile);
 
 const char *
 sc_touch_orientation_mode_name(enum sc_touch_orientation_mode mode);
+
+
+void
+sc_touch_simulation_log_config(const char *prefix,
+                               const struct sc_touch_simulation_config *config,
+                               const struct sc_touch_sampling_runtime *runtime);
 
 #ifdef __cplusplus
 }

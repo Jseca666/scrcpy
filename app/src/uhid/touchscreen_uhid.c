@@ -26,6 +26,20 @@ sc_touchscreen_uhid_finalize_releases(struct sc_touchscreen_uhid *touchscreen);
 static bool
 sc_touchscreen_uhid_commit_and_finalize(struct sc_touchscreen_uhid *touchscreen);
 
+static void
+sc_touchscreen_uhid_sync_runtime_from_config(struct sc_touchscreen_uhid *touchscreen);
+
+static void
+sc_touchscreen_uhid_sampling_note_emit(struct sc_touchscreen_uhid *touchscreen,
+                                       unsigned index, uint16_t x, uint16_t y,
+                                       uint16_t width, uint16_t height,
+                                       uint8_t pressure, uint16_t azimuth,
+                                       uint64_t now_us);
+
+static void
+sc_touchscreen_uhid_sampling_note_release(struct sc_touchscreen_uhid *touchscreen,
+                                          unsigned index, uint64_t now_us);
+
 static uint16_t
 sc_touchscreen_uhid_pick_size(uint16_t value, uint16_t fallback) {
     return value ? value : fallback;
@@ -40,6 +54,56 @@ sc_touchscreen_uhid_pick_azimuth(uint16_t value, uint16_t fallback) {
         return 18000;
     }
     return value;
+}
+
+static uint16_t
+sc_touchscreen_uhid_map_motion_orientation(uint16_t prev_x, uint16_t prev_y,
+                                           uint16_t x, uint16_t y,
+                                           uint16_t fallback) {
+    int32_t dx = (int32_t) x - prev_x;
+    int32_t dy = (int32_t) y - prev_y;
+    int32_t adx = dx < 0 ? -dx : dx;
+    int32_t ady = dy < 0 ? -dy : dy;
+    int32_t norm = adx + ady;
+    if (!norm) {
+        return fallback;
+    }
+
+    int32_t delta = (int32_t) ((int64_t) dy * 9000 / norm);
+    int32_t azimuth = 9000 + delta;
+    if (azimuth < 0) {
+        azimuth = 0;
+    } else if (azimuth > 18000) {
+        azimuth = 18000;
+    }
+    return (uint16_t) azimuth;
+}
+
+static uint16_t
+sc_touchscreen_uhid_pick_oriented_azimuth(struct sc_touchscreen_uhid *touchscreen,
+                                          const struct sc_touch_event *event,
+                                          int slot, uint16_t fallback) {
+    switch (touchscreen->sim_config.orientation_mode) {
+        case SC_TOUCH_ORIENTATION_FIXED:
+            return fallback;
+        case SC_TOUCH_ORIENTATION_FOLLOW_MOTION: {
+            if (slot >= 0 && (unsigned) slot < SC_HID_TOUCHSCREEN_CONTACTS) {
+                const struct sc_hid_touchscreen_contact *contact =
+                    &touchscreen->hid.contacts[slot];
+                if (contact->present) {
+                    return sc_touchscreen_uhid_map_motion_orientation(
+                            contact->x, contact->y,
+                            (uint16_t) event->position.point.x,
+                            (uint16_t) event->position.point.y,
+                            fallback);
+                }
+            }
+            return sc_touchscreen_uhid_pick_azimuth(event->azimuth, fallback);
+        }
+        case SC_TOUCH_ORIENTATION_HALF_RANGE:
+        default:
+            return sc_touchscreen_uhid_pick_azimuth(event->azimuth, fallback);
+    }
 }
 
 static int
@@ -96,6 +160,7 @@ sc_touchscreen_uhid_release_slot(struct sc_touchscreen_uhid *touchscreen,
                                  unsigned slot) {
     assert(slot < SC_HID_TOUCHSCREEN_CONTACTS);
     memset(&touchscreen->slots[slot], 0, sizeof(touchscreen->slots[slot]));
+    sc_touch_simulation_clear_slot(&touchscreen->sampling_slots[slot]);
 }
 
 static uint8_t
@@ -109,6 +174,30 @@ sc_touchscreen_uhid_normalize_pressure_with_config(
         return 100;
     }
     return (uint8_t) (scaled * 100.0f);
+}
+
+static void
+sc_touchscreen_uhid_sync_runtime_from_config(struct sc_touchscreen_uhid *touchscreen) {
+    sc_touch_simulation_config_build_runtime(&touchscreen->sim_config,
+                                            &touchscreen->sim_runtime);
+}
+
+static void
+sc_touchscreen_uhid_sampling_note_emit(struct sc_touchscreen_uhid *touchscreen,
+                                       unsigned index, uint16_t x, uint16_t y,
+                                       uint16_t width, uint16_t height,
+                                       uint8_t pressure, uint16_t azimuth,
+                                       uint64_t now_us) {
+    sc_touch_simulation_mark_emit(&touchscreen->sampling_slots[index],
+                                  x, y, width, height, pressure, azimuth,
+                                  now_us);
+}
+
+static void
+sc_touchscreen_uhid_sampling_note_release(struct sc_touchscreen_uhid *touchscreen,
+                                          unsigned index, uint64_t now_us) {
+    sc_touch_simulation_mark_release(&touchscreen->sampling_slots[index],
+                                     &touchscreen->sim_runtime, now_us);
 }
 
 static bool
@@ -229,10 +318,10 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
                                                    touchscreen->touch_major);
     uint16_t height = sc_touchscreen_uhid_pick_size(event->touch_minor,
                                                     touchscreen->touch_minor);
-    uint16_t azimuth = sc_touchscreen_uhid_pick_azimuth(event->azimuth,
-                                                        touchscreen->azimuth);
+    uint16_t azimuth;
     uint8_t pressure = sc_touchscreen_uhid_normalize_pressure_with_config(
             touchscreen, event->pressure);
+    uint64_t now_us = sc_touch_simulation_now_us();
 
     switch (event->action) {
         case SC_TOUCH_ACTION_DOWN:
@@ -242,10 +331,15 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
                 LOGW("Ignoring touch DOWN: no free touchscreen slot");
                 return;
             }
+            azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(
+                    touchscreen, event, slot, touchscreen->azimuth);
             sc_touchscreen_uhid_set_contact(touchscreen, (unsigned) slot,
                                             touchscreen->slots[slot].contact_id,
                                             x, y, width, height,
                                             pressure, azimuth);
+            sc_touchscreen_uhid_sampling_note_emit(touchscreen, (unsigned) slot,
+                                                   x, y, width, height,
+                                                   pressure, azimuth, now_us);
             sc_touchscreen_uhid_commit_or_defer(touchscreen);
             break;
         case SC_TOUCH_ACTION_MOVE:
@@ -256,10 +350,17 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
                      event->pointer_id);
                 return;
             }
+            azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(
+                    touchscreen, event, slot, touchscreen->azimuth);
+            azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(
+                    touchscreen, event, slot, touchscreen->azimuth);
             sc_touchscreen_uhid_set_contact(touchscreen, (unsigned) slot,
                                             touchscreen->slots[slot].contact_id,
                                             x, y, width, height,
                                             pressure, azimuth);
+            sc_touchscreen_uhid_sampling_note_emit(touchscreen, (unsigned) slot,
+                                                   x, y, width, height,
+                                                   pressure, azimuth, now_us);
             sc_touchscreen_uhid_commit_or_defer(touchscreen);
             break;
         case SC_TOUCH_ACTION_UP:
@@ -270,10 +371,13 @@ sc_touchscreen_uhid_process_touch(struct sc_touch_processor *tp,
                      event->pointer_id);
                 return;
             }
+            azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(
+                    touchscreen, event, slot, touchscreen->azimuth);
             sc_touchscreen_uhid_release_contact(touchscreen, (unsigned) slot,
                                                 touchscreen->slots[slot].contact_id,
                                                 x, y, width, height, azimuth);
             touchscreen->slots[slot].pending_release = true;
+            sc_touchscreen_uhid_sampling_note_release(touchscreen, (unsigned) slot, now_us);
             sc_touchscreen_uhid_commit_or_defer(touchscreen);
             break;
         default:
@@ -322,6 +426,7 @@ sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
     }
 
     memset(touchscreen->slots, 0, sizeof(touchscreen->slots));
+    memset(touchscreen->sampling_slots, 0, sizeof(touchscreen->sampling_slots));
     sc_touchscreen_uhid_clear_all(touchscreen);
     touchscreen->update_depth = 0;
     touchscreen->dirty = false;
@@ -336,13 +441,15 @@ void
 sc_touchscreen_uhid_set_default_contact_profile(
         struct sc_touchscreen_uhid *touchscreen,
         uint16_t width, uint16_t height, uint16_t azimuth) {
-    if (width) {
-        touchscreen->touch_major = width;
-        touchscreen->sim_config.touch_major_default = width;
-    }
-    if (height) {
-        touchscreen->touch_minor = height;
-        touchscreen->sim_config.touch_minor_default = height;
+    if (width || height) {
+        sc_touch_simulation_config_set_default_contact_profile(
+                &touchscreen->sim_config, width, height);
+        if (width) {
+            touchscreen->touch_major = width;
+        }
+        if (height) {
+            touchscreen->touch_minor = height;
+        }
     }
     if (azimuth) {
         touchscreen->azimuth = azimuth > 18000 ? 18000 : azimuth;
@@ -355,6 +462,7 @@ sc_touchscreen_uhid_set_simulation_config(
         const struct sc_touch_simulation_config *config) {
     assert(config);
     touchscreen->sim_config = *config;
+    sc_touchscreen_uhid_sync_runtime_from_config(touchscreen);
     if (config->touch_major_default) {
         touchscreen->touch_major = config->touch_major_default;
     }
@@ -367,6 +475,21 @@ const struct sc_touch_simulation_config *
 sc_touchscreen_uhid_get_simulation_config(
         const struct sc_touchscreen_uhid *touchscreen) {
     return &touchscreen->sim_config;
+}
+
+void
+sc_touchscreen_uhid_set_pressure_scale(
+        struct sc_touchscreen_uhid *touchscreen, float pressure_scale) {
+    sc_touch_simulation_config_set_pressure_scale(&touchscreen->sim_config,
+                                                  pressure_scale);
+}
+
+void
+sc_touchscreen_uhid_set_orientation_mode(
+        struct sc_touchscreen_uhid *touchscreen,
+        enum sc_touch_orientation_mode orientation_mode) {
+    sc_touch_simulation_config_set_orientation_mode(&touchscreen->sim_config,
+                                                    orientation_mode);
 }
 
 void
@@ -400,6 +523,7 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
     touchscreen->azimuth = 9000;
     touchscreen->sim_config = sc_touch_simulation_config_default(
             SC_TOUCH_MOTION_PROFILE_NATURAL);
+    sc_touchscreen_uhid_sync_runtime_from_config(touchscreen);
     sc_hid_touchscreen_init(&touchscreen->hid);
 
     struct sc_hid_open hid_open;
@@ -420,13 +544,16 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
         return false;
     }
 
-    LOGI("[touch-sim] config scaffold enabled profile=%s orientation=%s sample_hz=%u pressure_scale=%.2f major=%u minor=%u",
+    LOGI("[touch-sim] sampler scaffold enabled profile=%s orientation=%s sample_hz=%u pressure_scale=%.2f major=%u minor=%u target_interval_us=%" PRIu64 " sync_window_us=%" PRIu64 " release_hold_us=%" PRIu64,
          sc_touch_motion_profile_name(touchscreen->sim_config.motion_profile),
          sc_touch_orientation_mode_name(touchscreen->sim_config.orientation_mode),
          touchscreen->sim_config.sample_hz,
          touchscreen->sim_config.pressure_scale,
          touchscreen->sim_config.touch_major_default,
-         touchscreen->sim_config.touch_minor_default);
+         touchscreen->sim_config.touch_minor_default,
+         touchscreen->sim_runtime.target_interval_us,
+         touchscreen->sim_runtime.sync_window_us,
+         touchscreen->sim_runtime.release_hold_us);
 
     sc_touchscreen_uhid_test_schedule(touchscreen);
     return true;

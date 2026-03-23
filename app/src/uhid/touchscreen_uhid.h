@@ -17,6 +17,8 @@ struct sc_touchscreen_slot {
     uint16_t contact_id;
 };
 
+struct sc_touch_sampling_runtime;
+
 struct sc_touchscreen_uhid {
     struct sc_touch_processor touch_processor;
     struct sc_hid_touchscreen hid;
@@ -32,6 +34,8 @@ struct sc_touchscreen_uhid {
     uint16_t azimuth;
 
     struct sc_touch_simulation_config sim_config;
+    struct sc_touch_sampling_runtime sim_runtime;
+    struct sc_touch_sampling_slot_state sampling_slots[SC_HID_TOUCHSCREEN_CONTACTS];
 };
 
 bool
@@ -51,6 +55,15 @@ sc_touchscreen_uhid_set_simulation_config(
 const struct sc_touch_simulation_config *
 sc_touchscreen_uhid_get_simulation_config(
         const struct sc_touchscreen_uhid *touchscreen);
+
+void
+sc_touchscreen_uhid_set_pressure_scale(
+        struct sc_touchscreen_uhid *touchscreen, float pressure_scale);
+
+void
+sc_touchscreen_uhid_set_orientation_mode(
+        struct sc_touchscreen_uhid *touchscreen,
+        enum sc_touch_orientation_mode orientation_mode);
 
 void
 sc_touchscreen_uhid_set_motion_profile(

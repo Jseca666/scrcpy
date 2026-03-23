@@ -38,6 +38,9 @@ struct sc_touchscreen_uhid {
     struct sc_touch_simulation_config sim_config;
     struct sc_touch_sampling_runtime sim_runtime;
     struct sc_touch_sampling_slot_state sampling_slots[SC_HID_TOUCHSCREEN_CONTACTS];
+
+    /* kept for ABI/source compatibility with current callers; unused by the
+     * rewritten executor model */
     uint64_t batch_sync_anchor_us;
     bool batch_sync_anchor_active;
     uint64_t last_sync_tick_us;

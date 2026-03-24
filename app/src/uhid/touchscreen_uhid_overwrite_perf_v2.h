@@ -27,6 +27,8 @@ struct sc_touchscreen_uhid {
     unsigned explicit_frame_depth;
     bool dirty;
     unsigned active_pointer_count;
+    unsigned pending_release_count;
+    unsigned pending_finalize_count;
     int8_t sole_active_slot;
     int8_t last_pointer_slot;
     uint64_t last_pointer_id;

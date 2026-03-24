@@ -1,0 +1,76 @@
+diff --git a/app/src/uhid/touchscreen_uhid.c b/app/src/uhid/touchscreen_uhid.c
+index XXXXXXX..YYYYYYY 100644
+--- a/app/src/uhid/touchscreen_uhid.c
++++ b/app/src/uhid/touchscreen_uhid.c
+@@
+ static void
+ sc_touchscreen_uhid_post_commit_release_slots(
+     struct sc_touchscreen_uhid *touchscreen) {
+     for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
+         if (touchscreen->slots[i].active
+                 && touchscreen->slots[i].finalize_pending_commit) {
+             sc_touchscreen_uhid_release_slot(touchscreen, i);
+         }
+     }
+ }
+ 
++static void
++sc_touchscreen_uhid_reset_runtime_state(
++    struct sc_touchscreen_uhid *touchscreen) {
++    touchscreen->update_depth = 0;
++    touchscreen->explicit_frame_depth = 0;
++    touchscreen->batch_sync_anchor_us = 0;
++    touchscreen->batch_sync_anchor_active = false;
++    touchscreen->last_sync_tick_us = 0;
++    touchscreen->dirty = false;
++}
++
+ /*
+  * Legacy commit path used by the old event API and current deferred flushes.
+  * Phase 4 keeps it for compatibility but new explicit release/finalize users
+  * should progressively avoid relying on the auto-finalize side effect.
+  */
+ static bool
+ sc_touchscreen_uhid_legacy_commit_and_finalize(struct sc_touchscreen_uhid *touchscreen) {
+     if (!sc_touchscreen_uhid_commit(touchscreen)) {
+         return false;
+     }
+ 
+     sc_touchscreen_uhid_legacy_finalize_releases_at(touchscreen,
+                                                     sc_touch_simulation_now_us());
++    sc_touchscreen_uhid_post_commit_release_slots(touchscreen);
+-    touchscreen->dirty = false;
++    touchscreen->dirty = false;
+     return true;
+ }
+@@
+ void
+ sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
+     bool had_active = false;
+     uint64_t now_us = sc_touch_simulation_now_us();
+ 
+@@
+         sc_touchscreen_uhid_sampling_note_release(touchscreen, i, now_us);
+         had_active = true;
+     }
+-    touchscreen->update_depth = 0;
+-    touchscreen->dirty = false;
++    sc_touchscreen_uhid_reset_runtime_state(touchscreen);
+ 
+     if (had_active) {
+         if (!sc_touchscreen_uhid_legacy_commit_and_finalize(touchscreen)) {
+             LOGW("Could not send touchscreen release frame during reset");
+         }
+@@
+     memset(touchscreen->slots, 0, sizeof(touchscreen->slots));
+     memset(touchscreen->sampling_slots, 0, sizeof(touchscreen->sampling_slots));
+     sc_touchscreen_uhid_clear_all(touchscreen);
+-    touchscreen->update_depth = 0;
+-    touchscreen->dirty = false;
++    sc_touchscreen_uhid_reset_runtime_state(touchscreen);
+     touchscreen->next_contact_id = 1;
++
+     if (!sc_touchscreen_uhid_commit(touchscreen)) {
+         LOGW("Could not reset touchscreen state");
+     }
+ }

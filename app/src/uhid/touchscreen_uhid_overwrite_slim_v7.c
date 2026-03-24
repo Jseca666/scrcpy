@@ -141,6 +141,30 @@ sc_touchscreen_uhid_normalize_pressure(
     return scaled >= 1.0f ? 100 : (uint8_t) (scaled * 100.0f);
 }
 
+static uint64_t
+sc_touchscreen_uhid_pick_sync_tick_us(struct sc_touchscreen_uhid *touchscreen,
+                                      uint64_t now_us) {
+    if (!touchscreen->sim_runtime.sync_window_us) {
+        return now_us;
+    }
+
+    if (touchscreen->explicit_frame_depth) {
+        if (!touchscreen->batch_sync_anchor_us
+                || now_us - touchscreen->batch_sync_anchor_us
+                   > touchscreen->sim_runtime.sync_window_us) {
+            touchscreen->batch_sync_anchor_us = now_us;
+        }
+        return touchscreen->batch_sync_anchor_us;
+    }
+
+    if (!touchscreen->last_sync_tick_us
+            || now_us - touchscreen->last_sync_tick_us
+               > touchscreen->sim_runtime.sync_window_us) {
+        touchscreen->last_sync_tick_us = now_us;
+    }
+    return touchscreen->last_sync_tick_us;
+}
+
 static void
 sc_touchscreen_uhid_store_contact(struct sc_touchscreen_uhid *touchscreen,
                                   int slot, uint16_t x, uint16_t y,
@@ -164,31 +188,6 @@ sc_touchscreen_uhid_store_contact(struct sc_touchscreen_uhid *touchscreen,
     sc_touch_simulation_mark_emit(&touchscreen->sampling_slots[slot],
                                   x, y, width, height, pressure, azimuth,
                                   now_us);
-}
-
-static uint64_t
-sc_touchscreen_uhid_pick_sync_tick_us(struct sc_touchscreen_uhid *touchscreen,
-                                      uint64_t now_us) {
-    if (!touchscreen->sim_runtime.sync_window_us) {
-        return now_us;
-    }
-
-    if (touchscreen->update_depth || touchscreen->explicit_frame_depth) {
-        if (!touchscreen->batch_sync_anchor_active
-                || now_us - touchscreen->batch_sync_anchor_us
-                   > touchscreen->sim_runtime.sync_window_us) {
-            touchscreen->batch_sync_anchor_us = now_us;
-            touchscreen->batch_sync_anchor_active = true;
-        }
-        return touchscreen->batch_sync_anchor_us;
-    }
-
-    if (!touchscreen->last_sync_tick_us
-            || now_us - touchscreen->last_sync_tick_us
-               > touchscreen->sim_runtime.sync_window_us) {
-        touchscreen->last_sync_tick_us = now_us;
-    }
-    return touchscreen->last_sync_tick_us;
 }
 
 static bool
@@ -268,7 +267,7 @@ sc_touchscreen_uhid_flush_now(struct sc_touchscreen_uhid *touchscreen) {
 
 static void
 sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen) {
-    if (touchscreen->explicit_frame_depth || touchscreen->update_depth) {
+    if (touchscreen->explicit_frame_depth) {
         touchscreen->dirty = true;
         return;
     }
@@ -280,58 +279,23 @@ sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen) {
 
 static void
 sc_touchscreen_uhid_reset_runtime_state(struct sc_touchscreen_uhid *touchscreen) {
-    touchscreen->update_depth = 0;
     touchscreen->explicit_frame_depth = 0;
     touchscreen->batch_sync_anchor_us = 0;
-    touchscreen->batch_sync_anchor_active = false;
     touchscreen->last_sync_tick_us = 0;
     touchscreen->dirty = false;
 }
 
-static void
-sc_touchscreen_uhid_begin_batch(unsigned *depth, bool *anchor_active) {
-    if (!*depth) {
-        *anchor_active = false;
-    }
-    ++*depth;
-}
-
-static bool
-sc_touchscreen_uhid_end_batch(unsigned *depth, bool *anchor_active) {
-    if (!*depth) {
-        return false;
-    }
-    if (--*depth) {
-        return false;
-    }
-    *anchor_active = false;
-    return true;
-}
-
-static void
-sc_touchscreen_uhid_begin_touch_update(struct sc_touch_processor *tp) {
-    struct sc_touchscreen_uhid *touchscreen =
-        container_of(tp, struct sc_touchscreen_uhid, touch_processor);
-    sc_touchscreen_uhid_begin_batch(&touchscreen->update_depth,
-                                    &touchscreen->batch_sync_anchor_active);
-}
-
-static void
-sc_touchscreen_uhid_end_touch_update(struct sc_touch_processor *tp) {
-    struct sc_touchscreen_uhid *touchscreen =
-        container_of(tp, struct sc_touchscreen_uhid, touch_processor);
-
-    if (!sc_touchscreen_uhid_end_batch(&touchscreen->update_depth,
-                                       &touchscreen->batch_sync_anchor_active)) {
-        if (!touchscreen->update_depth) {
-            LOGW("Ignoring unmatched end_touch_update()");
+static unsigned
+sc_touchscreen_uhid_count_active(const struct sc_touchscreen_uhid *touchscreen) {
+    unsigned active = 0;
+    for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
+        if (touchscreen->slots[i].active
+                && !touchscreen->slots[i].pending_release
+                && !touchscreen->slots[i].finalize_pending_commit) {
+            ++active;
         }
-        return;
     }
-
-    if (touchscreen->dirty && !sc_touchscreen_uhid_flush_now(touchscreen)) {
-        LOGW("Could not flush deferred touchscreen state");
-    }
+    return active;
 }
 
 bool
@@ -343,19 +307,23 @@ sc_touchscreen_uhid_ensure_pointer(struct sc_touchscreen_uhid *touchscreen,
 
 void
 sc_touchscreen_uhid_begin_touch_frame(struct sc_touchscreen_uhid *touchscreen) {
-    sc_touchscreen_uhid_begin_batch(&touchscreen->explicit_frame_depth,
-                                    &touchscreen->batch_sync_anchor_active);
+    if (!touchscreen->explicit_frame_depth) {
+        touchscreen->batch_sync_anchor_us = 0;
+    }
+    ++touchscreen->explicit_frame_depth;
 }
 
 void
 sc_touchscreen_uhid_end_touch_frame(struct sc_touchscreen_uhid *touchscreen) {
-    if (!sc_touchscreen_uhid_end_batch(&touchscreen->explicit_frame_depth,
-                                       &touchscreen->batch_sync_anchor_active)) {
-        if (!touchscreen->explicit_frame_depth) {
-            LOGW("Ignoring unmatched end_touch_frame()");
-        }
+    if (!touchscreen->explicit_frame_depth) {
+        LOGW("Ignoring unmatched end_touch_frame()");
         return;
     }
+
+    if (--touchscreen->explicit_frame_depth) {
+        return;
+    }
+    touchscreen->batch_sync_anchor_us = 0;
 
     if (touchscreen->dirty) {
         if (!sc_touchscreen_uhid_commit(touchscreen)) {
@@ -413,26 +381,16 @@ sc_touchscreen_uhid_pointer_move(struct sc_touchscreen_uhid *touchscreen,
         return false;
     }
 
-    if (!touchscreen->update_depth) {
-        unsigned active = 0;
-        for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
-            if (touchscreen->slots[i].active
-                    && !touchscreen->slots[i].pending_release
-                    && !touchscreen->slots[i].finalize_pending_commit) {
-                ++active;
-            }
+    if (sc_touchscreen_uhid_count_active(touchscreen) == 1) {
+        const struct sc_touch_sampling_slot_state *state =
+            &touchscreen->sampling_slots[slot];
+        if (!sc_touch_simulation_should_emit_move(&touchscreen->sim_config,
+                                                  &touchscreen->sim_runtime,
+                                                  state, x, y, now_us)) {
+            return true;
         }
-        if (active == 1) {
-            const struct sc_touch_sampling_slot_state *state =
-                &touchscreen->sampling_slots[slot];
-            if (!sc_touch_simulation_should_emit_move(&touchscreen->sim_config,
-                                                      &touchscreen->sim_runtime,
-                                                      state, x, y, now_us)) {
-                return true;
-            }
-            sc_touch_simulation_apply_position_smoothing(
-                    &touchscreen->sim_config, state, &x, &y);
-        }
+        sc_touch_simulation_apply_position_smoothing(&touchscreen->sim_config,
+                                                     state, &x, &y);
     }
 
     sc_touchscreen_uhid_store_contact(
@@ -512,7 +470,7 @@ sc_touchscreen_uhid_finalize_pointer(struct sc_touchscreen_uhid *touchscreen,
         return true;
     }
 
-    if (!touchscreen->explicit_frame_depth && !touchscreen->update_depth) {
+    if (!touchscreen->explicit_frame_depth) {
         sc_hid_touchscreen_clear_contact(&touchscreen->hid, (unsigned) slot);
         touchscreen->slots[slot].pending_release = false;
         sc_touch_simulation_clear_slot(&touchscreen->sampling_slots[slot]);
@@ -579,50 +537,6 @@ sc_touchscreen_uhid_clear_all_pointers(struct sc_touchscreen_uhid *touchscreen) 
         touchscreen->dirty = true;
     }
 }
-
-static void
-sc_touchscreen_uhid_process_touch_compat(struct sc_touch_processor *tp,
-                                         const struct sc_touch_event *event) {
-    struct sc_touchscreen_uhid *touchscreen =
-        container_of(tp, struct sc_touchscreen_uhid, touch_processor);
-    uint16_t x = (uint16_t) event->position.point.x;
-    uint16_t y = (uint16_t) event->position.point.y;
-
-    switch (event->action) {
-        case SC_TOUCH_ACTION_DOWN:
-            (void) sc_touchscreen_uhid_pointer_down(touchscreen,
-                                                    event->pointer_id, x, y,
-                                                    event->pressure,
-                                                    event->touch_major,
-                                                    event->touch_minor,
-                                                    event->azimuth);
-            break;
-        case SC_TOUCH_ACTION_MOVE:
-            (void) sc_touchscreen_uhid_pointer_move(touchscreen,
-                                                    event->pointer_id, x, y,
-                                                    event->pressure,
-                                                    event->touch_major,
-                                                    event->touch_minor,
-                                                    event->azimuth);
-            break;
-        case SC_TOUCH_ACTION_UP:
-            (void) sc_touchscreen_uhid_end_pointer(touchscreen,
-                                                   event->pointer_id, x, y,
-                                                   event->pressure,
-                                                   event->touch_major,
-                                                   event->touch_minor,
-                                                   event->azimuth);
-            break;
-        default:
-            LOGW("Ignoring unknown touch action");
-    }
-}
-
-static const struct sc_touch_processor_ops sc_touchscreen_uhid_touch_processor_ops = {
-    .process_touch = sc_touchscreen_uhid_process_touch_compat,
-    .begin_touch_update = sc_touchscreen_uhid_begin_touch_update,
-    .end_touch_update = sc_touchscreen_uhid_end_touch_update,
-};
 
 void
 sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
@@ -727,7 +641,6 @@ sc_touchscreen_uhid_init(struct sc_touchscreen_uhid *touchscreen,
 
     memset(touchscreen, 0, sizeof(*touchscreen));
     touchscreen->controller = controller;
-    touchscreen->touch_processor.ops = &sc_touchscreen_uhid_touch_processor_ops;
     touchscreen->next_contact_id = 1;
     touchscreen->touch_major = 1000;
     touchscreen->touch_minor = 1400;

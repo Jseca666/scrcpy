@@ -12,19 +12,6 @@
 static const char *SC_TOUCHSCREEN_NAME = "Synaptics_ts";
 
 static uint16_t
-sc_touchscreen_uhid_pick_size(uint16_t value, uint16_t fallback) {
-    return value ? value : fallback;
-}
-
-static uint16_t
-sc_touchscreen_uhid_pick_azimuth(uint16_t value, uint16_t fallback) {
-    if (!value) {
-        return fallback;
-    }
-    return value > 18000 ? 18000 : value;
-}
-
-static uint16_t
 sc_touchscreen_uhid_map_motion_orientation(uint16_t prev_x, uint16_t prev_y,
                                            uint16_t x, uint16_t y,
                                            uint16_t fallback) {
@@ -53,11 +40,8 @@ sc_touchscreen_uhid_pick_oriented_azimuth(struct sc_touchscreen_uhid *touchscree
                                           uint16_t x, uint16_t y,
                                           uint16_t fallback) {
     if (touchscreen->sim_config.orientation_mode
-            != SC_TOUCH_ORIENTATION_FOLLOW_MOTION) {
-        return sc_touchscreen_uhid_pick_azimuth(event_azimuth, fallback);
-    }
-
-    if (slot >= 0 && (unsigned) slot < SC_HID_TOUCHSCREEN_CONTACTS) {
+            == SC_TOUCH_ORIENTATION_FOLLOW_MOTION
+            && slot >= 0 && (unsigned) slot < SC_HID_TOUCHSCREEN_CONTACTS) {
         const struct sc_hid_touchscreen_contact *contact =
             &touchscreen->hid.contacts[slot];
         if (contact->present) {
@@ -67,7 +51,10 @@ sc_touchscreen_uhid_pick_oriented_azimuth(struct sc_touchscreen_uhid *touchscree
         }
     }
 
-    return sc_touchscreen_uhid_pick_azimuth(event_azimuth, fallback);
+    if (!event_azimuth) {
+        return fallback;
+    }
+    return event_azimuth > 18000 ? 18000 : event_azimuth;
 }
 
 static int
@@ -148,21 +135,13 @@ sc_touchscreen_uhid_pick_sync_tick_us(struct sc_touchscreen_uhid *touchscreen,
         return now_us;
     }
 
-    if (touchscreen->explicit_frame_depth) {
-        if (!touchscreen->batch_sync_anchor_us
-                || now_us - touchscreen->batch_sync_anchor_us
-                   > touchscreen->sim_runtime.sync_window_us) {
-            touchscreen->batch_sync_anchor_us = now_us;
-        }
-        return touchscreen->batch_sync_anchor_us;
+    if (!touchscreen->sync_tick_us
+            || (!touchscreen->explicit_frame_depth
+                && now_us - touchscreen->sync_tick_us
+                   > touchscreen->sim_runtime.sync_window_us)) {
+        touchscreen->sync_tick_us = now_us;
     }
-
-    if (!touchscreen->last_sync_tick_us
-            || now_us - touchscreen->last_sync_tick_us
-               > touchscreen->sim_runtime.sync_window_us) {
-        touchscreen->last_sync_tick_us = now_us;
-    }
-    return touchscreen->last_sync_tick_us;
+    return touchscreen->sync_tick_us;
 }
 
 static void
@@ -173,10 +152,8 @@ sc_touchscreen_uhid_store_contact(struct sc_touchscreen_uhid *touchscreen,
                                   uint16_t touch_minor,
                                   uint16_t azimuth_value,
                                   uint64_t now_us) {
-    uint16_t width = sc_touchscreen_uhid_pick_size(touch_major,
-                                                   touchscreen->touch_major);
-    uint16_t height = sc_touchscreen_uhid_pick_size(touch_minor,
-                                                    touchscreen->touch_minor);
+    uint16_t width = touch_major ? touch_major : touchscreen->touch_major;
+    uint16_t height = touch_minor ? touch_minor : touchscreen->touch_minor;
     uint8_t pressure = sc_touchscreen_uhid_normalize_pressure(touchscreen,
                                                               pressure_value);
     uint16_t azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(
@@ -277,38 +254,10 @@ sc_touchscreen_uhid_commit_or_defer(struct sc_touchscreen_uhid *touchscreen) {
     }
 }
 
-static void
-sc_touchscreen_uhid_reset_runtime_state(struct sc_touchscreen_uhid *touchscreen) {
-    touchscreen->explicit_frame_depth = 0;
-    touchscreen->batch_sync_anchor_us = 0;
-    touchscreen->last_sync_tick_us = 0;
-    touchscreen->dirty = false;
-}
-
-static unsigned
-sc_touchscreen_uhid_count_active(const struct sc_touchscreen_uhid *touchscreen) {
-    unsigned active = 0;
-    for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
-        if (touchscreen->slots[i].active
-                && !touchscreen->slots[i].pending_release
-                && !touchscreen->slots[i].finalize_pending_commit) {
-            ++active;
-        }
-    }
-    return active;
-}
-
-bool
-sc_touchscreen_uhid_ensure_pointer(struct sc_touchscreen_uhid *touchscreen,
-                                   uint64_t pointer_id) {
-    return sc_touchscreen_uhid_find_slot(touchscreen, pointer_id, true) >= 0
-        || sc_touchscreen_uhid_acquire_slot(touchscreen, pointer_id) >= 0;
-}
-
 void
 sc_touchscreen_uhid_begin_touch_frame(struct sc_touchscreen_uhid *touchscreen) {
     if (!touchscreen->explicit_frame_depth) {
-        touchscreen->batch_sync_anchor_us = 0;
+        touchscreen->sync_tick_us = 0;
     }
     ++touchscreen->explicit_frame_depth;
 }
@@ -323,7 +272,7 @@ sc_touchscreen_uhid_end_touch_frame(struct sc_touchscreen_uhid *touchscreen) {
     if (--touchscreen->explicit_frame_depth) {
         return;
     }
-    touchscreen->batch_sync_anchor_us = 0;
+    touchscreen->sync_tick_us = 0;
 
     if (touchscreen->dirty) {
         if (!sc_touchscreen_uhid_commit(touchscreen)) {
@@ -381,62 +330,32 @@ sc_touchscreen_uhid_pointer_move(struct sc_touchscreen_uhid *touchscreen,
         return false;
     }
 
-    if (sc_touchscreen_uhid_count_active(touchscreen) == 1) {
-        const struct sc_touch_sampling_slot_state *state =
-            &touchscreen->sampling_slots[slot];
-        if (!sc_touch_simulation_should_emit_move(&touchscreen->sim_config,
-                                                  &touchscreen->sim_runtime,
-                                                  state, x, y, now_us)) {
-            return true;
+    {
+        unsigned active = 0;
+        for (unsigned i = 0; i < SC_HID_TOUCHSCREEN_CONTACTS; ++i) {
+            if (touchscreen->slots[i].active
+                    && !touchscreen->slots[i].pending_release
+                    && !touchscreen->slots[i].finalize_pending_commit) {
+                ++active;
+            }
         }
-        sc_touch_simulation_apply_position_smoothing(&touchscreen->sim_config,
-                                                     state, &x, &y);
+        if (active == 1) {
+            const struct sc_touch_sampling_slot_state *state =
+                &touchscreen->sampling_slots[slot];
+            if (!sc_touch_simulation_should_emit_move(&touchscreen->sim_config,
+                                                      &touchscreen->sim_runtime,
+                                                      state, x, y, now_us)) {
+                return true;
+            }
+            sc_touch_simulation_apply_position_smoothing(
+                    &touchscreen->sim_config, state, &x, &y);
+        }
     }
 
     sc_touchscreen_uhid_store_contact(
             touchscreen, slot, x, y, pressure_value, touch_major, touch_minor,
             azimuth_value,
             sc_touchscreen_uhid_pick_sync_tick_us(touchscreen, now_us));
-    sc_touchscreen_uhid_commit_or_defer(touchscreen);
-    return true;
-}
-
-static bool
-sc_touchscreen_uhid_release_common(struct sc_touchscreen_uhid *touchscreen,
-                                   uint64_t pointer_id,
-                                   uint16_t x, uint16_t y,
-                                   uint16_t touch_major,
-                                   uint16_t touch_minor,
-                                   uint16_t azimuth_value,
-                                   bool arm_pending_release) {
-    int slot = sc_touchscreen_uhid_find_slot(touchscreen, pointer_id, false);
-    uint16_t width;
-    uint16_t height;
-    uint16_t azimuth;
-
-    if (slot < 0) {
-        LOGW("Ignoring touch UP: pointer_id %" PRIu64 " not active",
-             pointer_id);
-        return false;
-    }
-
-    width = sc_touchscreen_uhid_pick_size(touch_major, touchscreen->touch_major);
-    height = sc_touchscreen_uhid_pick_size(touch_minor, touchscreen->touch_minor);
-    azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(touchscreen,
-                                                        azimuth_value,
-                                                        slot, x, y,
-                                                        touchscreen->azimuth);
-
-    sc_hid_touchscreen_release_contact(&touchscreen->hid, (unsigned) slot,
-                                       touchscreen->slots[slot].contact_id,
-                                       x, y, width, height, azimuth);
-    touchscreen->slots[slot].pending_release = arm_pending_release;
-    touchscreen->slots[slot].finalize_pending_commit = false;
-    sc_touch_simulation_mark_release(&touchscreen->sampling_slots[slot],
-                                     &touchscreen->sim_runtime,
-                                     sc_touchscreen_uhid_pick_sync_tick_us(
-                                             touchscreen,
-                                             sc_touch_simulation_now_us()));
     sc_touchscreen_uhid_commit_or_defer(touchscreen);
     return true;
 }
@@ -448,10 +367,37 @@ sc_touchscreen_uhid_pointer_release(struct sc_touchscreen_uhid *touchscreen,
                                     float pressure_value,
                                     uint16_t touch_major, uint16_t touch_minor,
                                     uint16_t azimuth_value) {
+    int slot = sc_touchscreen_uhid_find_slot(touchscreen, pointer_id, false);
+    uint16_t width;
+    uint16_t height;
+    uint16_t azimuth;
+
     (void) pressure_value;
-    return sc_touchscreen_uhid_release_common(touchscreen, pointer_id, x, y,
-                                              touch_major, touch_minor,
-                                              azimuth_value, true);
+    if (slot < 0) {
+        LOGW("Ignoring touch UP: pointer_id %" PRIu64 " not active",
+             pointer_id);
+        return false;
+    }
+
+    width = touch_major ? touch_major : touchscreen->touch_major;
+    height = touch_minor ? touch_minor : touchscreen->touch_minor;
+    azimuth = sc_touchscreen_uhid_pick_oriented_azimuth(touchscreen,
+                                                        azimuth_value,
+                                                        slot, x, y,
+                                                        touchscreen->azimuth);
+
+    sc_hid_touchscreen_release_contact(&touchscreen->hid, (unsigned) slot,
+                                       touchscreen->slots[slot].contact_id,
+                                       x, y, width, height, azimuth);
+    touchscreen->slots[slot].pending_release = true;
+    touchscreen->slots[slot].finalize_pending_commit = false;
+    sc_touch_simulation_mark_release(&touchscreen->sampling_slots[slot],
+                                     &touchscreen->sim_runtime,
+                                     sc_touchscreen_uhid_pick_sync_tick_us(
+                                             touchscreen,
+                                             sc_touch_simulation_now_us()));
+    sc_touchscreen_uhid_commit_or_defer(touchscreen);
+    return true;
 }
 
 bool
@@ -464,16 +410,13 @@ sc_touchscreen_uhid_finalize_pointer(struct sc_touchscreen_uhid *touchscreen,
 
     touchscreen->slots[slot].finalize_pending_commit = true;
 
-    if (!touchscreen->slots[slot].pending_release) {
+    if (!touchscreen->slots[slot].pending_release
+            || !touchscreen->explicit_frame_depth) {
         sc_hid_touchscreen_clear_contact(&touchscreen->hid, (unsigned) slot);
-        sc_touchscreen_uhid_commit_or_defer(touchscreen);
-        return true;
-    }
-
-    if (!touchscreen->explicit_frame_depth) {
-        sc_hid_touchscreen_clear_contact(&touchscreen->hid, (unsigned) slot);
-        touchscreen->slots[slot].pending_release = false;
-        sc_touch_simulation_clear_slot(&touchscreen->sampling_slots[slot]);
+        if (touchscreen->slots[slot].pending_release) {
+            touchscreen->slots[slot].pending_release = false;
+            sc_touch_simulation_clear_slot(&touchscreen->sampling_slots[slot]);
+        }
         sc_touchscreen_uhid_commit_or_defer(touchscreen);
     }
 
@@ -509,21 +452,6 @@ sc_touchscreen_uhid_mark_all_releasing(struct sc_touchscreen_uhid *touchscreen,
     return changed;
 }
 
-bool
-sc_touchscreen_uhid_end_pointer(struct sc_touchscreen_uhid *touchscreen,
-                                uint64_t pointer_id,
-                                uint16_t x, uint16_t y,
-                                float pressure_value,
-                                uint16_t touch_major, uint16_t touch_minor,
-                                uint16_t azimuth_value) {
-    if (!sc_touchscreen_uhid_pointer_release(touchscreen, pointer_id, x, y,
-                                             pressure_value, touch_major,
-                                             touch_minor, azimuth_value)) {
-        return false;
-    }
-    return sc_touchscreen_uhid_finalize_pointer(touchscreen, pointer_id);
-}
-
 void
 sc_touchscreen_uhid_clear_all_pointers(struct sc_touchscreen_uhid *touchscreen) {
     if (!touchscreen->explicit_frame_depth) {
@@ -543,7 +471,9 @@ sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
     bool had_active = sc_touchscreen_uhid_mark_all_releasing(
             touchscreen, sc_touch_simulation_now_us());
 
-    sc_touchscreen_uhid_reset_runtime_state(touchscreen);
+    touchscreen->explicit_frame_depth = 0;
+    touchscreen->sync_tick_us = 0;
+    touchscreen->dirty = false;
     if (had_active && !sc_touchscreen_uhid_flush_now(touchscreen)) {
         LOGW("Could not send touchscreen release frame during reset");
     }
@@ -551,7 +481,9 @@ sc_touchscreen_uhid_reset(struct sc_touchscreen_uhid *touchscreen) {
     memset(touchscreen->slots, 0, sizeof(touchscreen->slots));
     memset(touchscreen->sampling_slots, 0, sizeof(touchscreen->sampling_slots));
     sc_hid_touchscreen_clear_all(&touchscreen->hid);
-    sc_touchscreen_uhid_reset_runtime_state(touchscreen);
+    touchscreen->explicit_frame_depth = 0;
+    touchscreen->sync_tick_us = 0;
+    touchscreen->dirty = false;
     touchscreen->next_contact_id = 1;
 
     if (!sc_touchscreen_uhid_commit(touchscreen)) {
